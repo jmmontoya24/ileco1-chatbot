@@ -1,0 +1,555 @@
+version: "3.1"
+
+intents:
+  - greet
+  - accept_terms
+  - report_power_outage
+  - follow_up_report
+  - schedule_outage
+  - online_billing
+  - payment_option
+  - requirements_checklist
+  - schedule_pmos
+  - download_forms
+  - meter_concern
+  - transfer_of_meter
+  - out_of_scope
+  - contact_information
+  - rates
+  - office_location
+  - energy_saving_tips
+  - talk_to_agent
+
+entities:
+  - po_full_name
+  - po_address
+  - po_contact_number
+  - mc_account_no
+  - mc_full_name
+  - mc_address
+  - mc_contact_number
+  - mc_meter_concern
+  - fr_job_order_id
+  - tta_full_name
+  - tta_concern
+  - tta_contact_number
+  
+forms:
+  power_outage_form:
+    required_slots:
+      - po_full_name
+      - po_address
+      - po_contact_number
+
+
+  meter_concern_form:
+    required_slots:
+      - mc_account_no
+      - mc_full_name
+      - mc_address
+      - mc_contact_number
+      - mc_meter_concern
+  follow_up_report_form:
+    required_slots:
+      - fr_job_order_id
+  talk_to_agent_form:
+    required_slots:
+    - tta_full_name
+    - tta_concern
+    - tta_contact_number
+ 
+slots:
+  terms_agreed:
+    type: bool
+    influence_conversation: false
+    initial_value: false
+    mappings:
+      - type: from_intent
+        intent: accept_terms
+        value: true
+
+  po_full_name:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: power_outage_form
+            requested_slot: po_full_name
+  tta_full_name:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: talk_to_agent_form
+            requested_slot: tta_full_name
+  
+  po_address:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: power_outage_form
+            requested_slot: po_address
+  po_contact_number:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: power_outage_form
+            requested_slot: po_contact_number
+  tta_contact_number:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: talk_to_agent_form
+            requested_slot: tta_contact_number
+  fr_job_order_id:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+        - active_loop: follow_up_report_form
+          requested_slot: fr_job_order_id
+
+  mc_account_no:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: meter_concern_form
+            requested_slot: mc_account_no
+  mc_full_name:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: meter_concern_form
+            requested_slot: mc_full_name
+  mc_meter_concern:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: meter_concern_form
+            requested_slot: mc_meter_concern
+  mc_address:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: meter_concern_form
+            requested_slot: mc_address
+  mc_contact_number:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: meter_concern_form
+            requested_slot: mc_contact_number
+  agent_requested:
+    type: bool
+    influence_conversation: true
+    mappings:
+      - type: custom
+
+  tta_concern:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: talk_to_agent_form
+            requested_slot: tta_concern
+            
+responses:
+  utter_greet:
+  - text: |
+      👋 **Hello! Welcome to ILECO 1 Member-Consumer-Owner (MCO) Support Chatbot.**
+
+      We are very eager to serve and cater to your concerns.
+
+      ✅ To continue, kindly click **"I Agree"** to accept our **Terms of Use** and **Privacy Policy**.
+    buttons:
+      - title: "I Agree"
+        payload: "/accept_terms"
+
+  
+  utter_agree:
+    - text: |
+        ✅ *Thank you for accepting our Terms of Use and Privacy Policy!*
+
+        We're here to help you. Please choose from the options below:
+
+  utter_ask_po_full_name:
+    - text: |
+        
+
+        To help us resolve the power issue in your area, kindly provide your:
+
+        👉 *Full Name*
+
+        📌 *Example:* Juan Dela Cruz
+  
+  utter_ask_mc_full_name:
+    - text: |
+        
+
+        📝 To help us proceed with your meter concern, may we kindly have your:  
+      
+        👉 *Full Name*
+
+        📌 *Example:* Juan Dela Cruz
+    
+  utter_ask_tta_full_name:
+    - text: |
+        
+
+        📝 To help us proceed with your  concern, may we kindly have your:  
+      
+        👉 *Full Name*
+
+        📌 *Example:* Juan Dela Cruz
+
+  utter_ask_po_address:
+  - text: |
+      🏠 Please enter your complete address including both:
+      • *Barangay*  
+      • *Town*
+
+      📌 *Example:* Brgy. Bacan, Cabatuan, Iloilo.
+
+  utter_ask_mc_address:
+  - text: |
+      🏠 Please enter your complete address including both:
+
+      • *Barangay*  
+      • *Town*
+
+      📌 *Example:* Brgy. Bacan, Cabatuan, Iloilo.
+
+  utter_ask_po_contact_number:
+  - text: |
+      ☎️ *May we ask for your contact number?*
+
+      This will help us reach you with updates regarding your report.
+
+      📌 *Example:* 09123456789
+  
+  utter_ask_mc_contact_number:
+  - text: |
+      ☎️ *May we ask for your contact number?*
+
+      This will help us reach you with updates regarding your report.
+
+      📌 *Example:* 09123456789
+  
+  utter_ask_tta_contact_number:
+  - text: |
+      ☎️ *May we ask for your contact number?*
+
+      This will help us reach you with updates regarding your report.
+
+      📌 *Example:* 09123456789
+  
+  utter_ask_mc_account_no:
+  - text: |
+        📌 To proceed, please provide your *Account Number*. (6–7 digits)  
+        This will allow us to locate your records quickly.
+  
+  utter_ask_mc_meter_concern:
+  - text: |
+      💡 We're here to help with your meter concern!
+
+      📝 Kindly describe the issue with your electric meter.  
+      Examples of valid concerns include:
+      - *No display*  
+      - *Faded reading*  
+      - *Burned*  
+      - *Not rotating*  
+      - *Stuck up*  
+      - *Broken*  
+      - *Tilting*  
+      - *Defective*  
+      - *Damaged*  
+      - *Malfunction*  
+
+      This helps us process your request faster. Thank you! 😊
+  utter_ask_tta_concern:
+  - text: |
+      Please choose the reason for your concern:
+
+      1️⃣ *No Electricity / Power Outage* 
+
+      2️⃣ *Emergency (fallen wire, fire hazard)* 
+
+      3️⃣ *Billing Issues* 
+
+      4️⃣ *New Connection / Installation* 
+
+      5️⃣ *Follow-up on Report* 
+
+      6️⃣ *Transfer / Disconnection* 
+
+      7️⃣ *Others* – 
+
+      💡 *You can reply with the number (e.g. "1") or describe your concern directly.*
+
+  utter_submit_power_outage_form:
+    - text: "✅ Thank you! We've received your report. Our team will respond shortly."
+  
+  utter_ask_fr_job_order_id:
+  - text: |
+      To assist you further, may we kindly ask for your *Job Order Number*?
+
+      *Example:* `JO-20250722-1944`
+
+      Please bear with us for a moment while we check for any issues reported in your area.
+
+      We'll check the status for you right away.
+
+      Thank you for your patience and understanding.
+  
+  utter_schedule_power_outage:
+  - text: |
+      ⚠️ *Scheduled Power Interruption Notice!*
+
+      We would like to inform you of scheduled power interruptions that may affect your area. Kindly refer to the announcements below for more details:
+
+      📍 *1. Cabatuan*  
+      🔗 [View Announcement](https://www.facebook.com/photo?fbid=773449411692393&set=a.205842095119797)
+
+      📍 *2. Leganes*  
+      🔗 [View Announcement](https://www.facebook.com/photo?fbid=772676475103020&set=a.205842095119797)
+
+      📍 *3. Leon*  
+      🔗 [View Announcement](https://www.facebook.com/photo/?fbid=769774592059875&set=a.205842095119797)
+
+      🙏 Thank you for your patience and understanding.
+
+    
+  utter_billing_registration:
+    - text: |
+        Thank you for reaching out to us.
+
+        To register your account for online billing, please visit the link below:
+
+        ILECO I E-Billing Registration: http://bit.ly/ILECOI-Ebilling
+      image: "https://res.cloudinary.com/deirjq57l/image/upload/v1752653645/electronicbilling_pwzch1.jpg"
+
+  utter_billing_registration1:
+    - text: |
+        With our E-Billing service, you can:
+
+        - Receive your electric bill via email  
+        - Check for unpaid bills  
+        - View your billing history anytime
+
+  utter_payment_option:
+    - text: |
+         Thank you for your inquiry. Here are the available payment methods:
+         
+         • Over-the-Counter  
+         • GCash  
+         • Office Payment  
+         • Online Banking
+      image: "https://res.cloudinary.com/deirjq57l/image/upload/v1752653781/payments_iv0r3l.jpg"
+
+
+
+  utter_requirements_checklist:
+  - text: |
+      📋 *Thank you for your interest in being part of ILECO 1!*
+
+      For your advance reference, here is the checklist of requirements for the application under the following types:
+
+      • *Indigenous Materials*  
+      • *Concrete Structure*  
+      • *Subdivision*  
+      • *Commercial / Corporation / Judicial*
+
+      Please review the image below carefully.
+
+    image: "https://res.cloudinary.com/deirjq57l/image/upload/v1752655166/APPLICATION_2_ogyk28.png"
+
+  utter_requirements_checklist_2:
+  - text: |
+      • *Net Metering Applicants*
+
+
+    image: "https://res.cloudinary.com/deirjq57l/image/upload/v1752655905/aNetMetering_esfkgb.jpg"
+  
+  utter_pmos_schedule:
+    - text: |
+        🌟 *APRIL 2025 PMOS SCHEDULE* 🌟  
+        ✨ *Pre-Membership Orientation Seminar*  
+        📍 *At ILECO I Field Offices*
+
+        As part of our mission to provide excellent service to our *Member-Consumer-Owners*,  
+        we're bringing PMOS *closer to your community* for your convenience. 💚
+
+        📌 *Important Reminders:*  
+        🚫 No Proxy Allowed  
+        🗓️ Pre-registration at least 3 days before the schedule  
+        👥 Max of 15 attendees per schedule  
+        ❌ No Confirmation = No Seminar
+
+        🔗 *Register Online:*  
+        👉 [tinyurl.com/ONLINEPMOS](https://tinyurl.com/ONLINEPMOS)
+
+        For questions, contact us here or 📞 0917-314-4006  
+        🕗 Mon–Fri | 8AM–5PM (except Holidays)
+      image: "https://res.cloudinary.com/deirjq57l/image/upload/v1752739259/pmos_qk9aod.jpg"
+    
+  utter_downloadable_forms:
+   - text: |
+        📝 *Downloadable Forms Available!*
+
+        You can download and print the forms you need from our website:
+
+        👉 Visit: [https://ileco1.com]
+        Then go to **Consumer Info > What Do You Need**
+
+        🖨️ From there, choose your form, download the PDF, and print it at your convenience.
+  utter_transfer_of_meter:
+    - text: |
+         Thank you for reaching out to us regarding your concern. For request of transfer meter, kindly comply the following requirements
+
+
+         *AFFIDAVIT OF HEIRSHIP WITH CONSENT*
+
+      image: "https://res.cloudinary.com/deirjq57l/image/upload/v1753231174/AFFIDAVIT_OF_HEIRSHIP_WITH_CONSENT_nsjoic.jpg"
+  utter_transfer_of_meter1:
+    - text: |
+          *AFFIDAVIT OF CONSENT*
+       
+      image: "https://res.cloudinary.com/deirjq57l/image/upload/v1753231197/AFFIDAVIT_OF_CONSENT_uamlxq.jpg"
+
+  utter_transfer_of_meter2:
+    - text: |
+        *AFFIDAVIT OF HEIRSHIP*
+
+      image: "https://res.cloudinary.com/deirjq57l/image/upload/v1753231208/AFFIDAVID_OF_HEIRSHIP_q1nitd.jpg"
+  
+  utter_transfer_of_meter3:
+    - text: |
+        *INSPECTION REPORT*
+      image: "https://res.cloudinary.com/deirjq57l/image/upload/v1753231530/infection_report_py8kon.jpg"
+  
+  utter_transfer_of_meter4:
+    - text: |
+        *MAPPING*
+      image: "https://res.cloudinary.com/deirjq57l/image/upload/v1753231902/MAPPING_d6ptw7.png"
+  utter_contact_information:
+  - text: |
+      📞 *Thank you for getting in touch with us!*
+
+      For any concerns or inquiries, feel free to reach us anytime through our **24/7 hotline** below.
+
+      We’re always here to assist you!
+    image: "https://res.cloudinary.com/deirjq57l/image/upload/v1753235628/Contact_Information_loy4ip.jpg"
+  
+  utter_contact_information1:
+  - text: |
+        
+    image: "https://res.cloudinary.com/deirjq57l/image/upload/v1763627575/ileco_1_hotline_numbers_q9domk.jpg"
+    
+
+  utter_rates:
+  - text: |
+      Thank you for reaching out to us regarding your inquiries. The rate report for the month is as follows
+
+      We’re always here to assist you!
+    image: "https://res.cloudinary.com/deirjq57l/image/upload/v1753237954/rates_flkwm1.jpg"
+  
+  utter_office_location:
+  - text: |
+      🏢 *ILECO I Office Locations & Service Centers* 🏢
+
+      📍 *San Joaquin Collection Office*  
+      Public Market, Arroyo St., San Joaquin, Iloilo
+
+      📍 *Miagao Area Office*  
+      Netura St., Ubos Ilawod, Miagao, Iloilo
+
+      📍 *Guimbal Service Center*  
+      Rizal-Tuguisan, Guimbal, Iloilo
+
+      📍 *ILECO I Main Office*  
+      ILECO I Compound, Namocon, Tigbauan, Iloilo
+
+      📍 *Oton Area Office*  
+      Stall #6 & 7, Gaisano Annex, J.C. Zulueta St., Oton, Iloilo
+
+      📍 *Robinson Collection Office*  
+      Ungka II, Pavia, Iloilo
+
+      📍 *Plazuela Collection Office*  
+      2/F, Plazuela Tres, Evangelista St., Pavia, Iloilo
+
+      📍 *Leganes Service Center*  
+      Quintin Salas St., Poblacion, Leganes, Iloilo
+
+      📍 *San Miguel Service Center*  
+      Suarez St., San Miguel, Iloilo
+
+      📍 *Sta. Barbara Area Office*  
+      Bolong Oeste, Sta. Barbara, Iloilo
+
+      📍 *Cabatuan Service Center*  
+      Banguit, Cabatuan, Iloilo
+
+      🕘 *Office Hours:* Monday to Friday, 8:00 AM – 5:00 PM
+
+  utter_energy_saving_tips:
+  - text: |
+      💡 *DID YOU KNOW?* 
+
+      You can *save energy* and *reduce your electric bill* with simple tips!
+
+      🛠️ Turn off appliances when not in use  
+      🌞 Use natural light during the day  
+      🌬️ Keep appliances clean and well-maintained  
+      💡 Switch to LED lights  
+      🚿 Limit use of high-energy appliances during peak hours  
+
+      Let's work together to build a more energy-efficient home! 🏠💚
+    image: "https://res.cloudinary.com/deirjq57l/image/upload/v1753239579/energy_saving_tips_rm0zti.jpg"
+
+  utter_invalid_job_order:
+    - text: |
+        ❗ The Job Order Number you provided seems invalid.
+        Please make sure it's in the correct format like `JO-20250722-1944`.
+
+  utter_default:
+    - text: " I'm sorry, I didn't quite understand that. Type 'menu' to continue"
+  
+
+
+
+
+
+  
+actions:
+
+  - action_show_carousel
+  - action_show_carousel_extra
+  - action_submit_power_outage_form
+  - validate_meter_concern_form
+  - validate_power_outage_form
+  - action_submit_follow_up_report_form
+  - action_submit_meter_concern
+  - action_check_terms
+  - action_default_fallback
+  - validate_follow_up_report_form
+  - validate_agent_request_form
+  - action_request_agent
+  - action_resume_conversation
+  - action_submit_talk_to_agent_form
+  - validate_talk_to_agent_form
+  - action_reset_all_slots
+  - action_default_fallback
+  - action_serve_next_user
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true

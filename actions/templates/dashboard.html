@@ -1,0 +1,4378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ILECO-1 Complaint Management Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    
+    <style>
+        /* Base Styles */
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background: #f5f6fa;
+        }
+
+        /* Enhanced Professional Header */
+.header {
+    background: linear-gradient(135deg, #003366 0%, #004d99 100%);
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    position: relative;
+}
+
+        /* Logo Section */
+.header-logo {
+    flex-shrink: 0;
+    margin-right: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.header-logo img {
+    width: 120px;  /* Increased from 60px to a more prominent size */
+    height: 120px; /* Increased from 60px to match width for square logo */
+    object-fit: contain; /* Ensures the image scales properly */
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+    background: rgba(255, 255, 255, 0.95);
+    padding: 6px;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+@media (max-width: 768px) {
+    .header-logo img {
+        width: 80px;  /* Reduced size for mobile */
+        height: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-logo img {
+        width: 60px;  /* Minimum size for very small screens */
+        height: 60px;
+    }
+}
+
+          /* Center Content */
+.header-center {
+    flex: 1;
+    text-align: center;
+    padding: 0 20px;
+}
+
+.header-center h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    line-height: 1.3;
+}
+
+.header-center .company-name {
+    display: block;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 2px;
+    color: #ffffff;
+}
+
+.header-center .dashboard-title {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: #e3f2fd; 
+}
+
+.header-center p {
+    margin: 5px 0 0 0;
+    opacity: 0.9;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    color: #b3d9ff;
+}
+        .user-avatar {
+        width: 32px;
+         height: 32px;
+         border-radius: 50%;
+         background: linear-gradient(135deg, #64b5f6 0%, #1976d2 100%);
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         font-size: 16px;
+          font-weight: 700;
+         }
+
+        /* User Menu Styles */
+        .user-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .user-info-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            min-width: 220px;
+            z-index: 1000;
+            animation: slideDown 0.3s ease;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .user-dropdown-header {
+            padding: 15px;
+            border-bottom: 2px solid #e9ecef;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 8px 8px 0 0;
+        }
+
+        .user-dropdown-header h4 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .user-dropdown-header p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 12px;
+        }
+
+        .user-dropdown-menu {
+            padding: 8px 0;
+        }
+
+        .user-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: #495057;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .user-dropdown-item:hover {
+            background: #f8f9fa;
+            color: #007bff;
+            padding-left: 25px;
+        }
+
+        .user-dropdown-item.logout {
+            color: #dc3545;
+            border-top: 1px solid #e9ecef;
+            margin-top: 8px;
+        }
+
+        .user-dropdown-item.logout:hover {
+            background: #fff5f5;
+        }
+
+        .user-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #007bff;
+            color: white;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .user-badge.admin {
+            background: linear-gradient(135deg, #dc3545 0%, #c0392b 100%);
+        }
+
+        /* Dashboard Layout */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 75% 25%;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+
+        /* Map Container */
+        .map-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        #map {
+            height: 70vh;
+            width: 100%;
+            position: relative;
+        }
+
+        .map-controls {
+            padding: 15px;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .map-controls input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .map-controls input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .map-controls button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .map-controls button:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+        }
+
+        /* Statistics Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+
+        .stat-number {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat-number.urgent { color: #dc3545; }
+        .stat-number.warning { color: #ffc107; }
+        .stat-number.success { color: #28a745; }
+        .stat-number.info { color: #17a2b8; }
+
+        .stat-label {
+            font-size: 13px;
+            color: #6c757d;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-circle-bg {
+            position: absolute;
+            top: -30%;
+            right: -20%;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            opacity: 0.1;
+            z-index: 1;
+        }
+        .stat-circle-bg.red { background: #dc3545; }
+        .stat-circle-bg.yellow { background: #ffc107; }
+        .stat-circle-bg.green { background: #28a745; }
+        .stat-circle-bg.blue { background: #17a2b8; }
+
+        /* Section Headers */
+        .section-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 15px 20px;
+            border-radius: 12px 12px 0 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #495057;
+            border-bottom: 3px solid #007bff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Enhanced Filter Styles */
+.filters {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    width: 100%;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.filter-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.filter-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 140px;
+    flex: 1;
+}
+
+.filter-group.date-input {
+    min-width: 160px;
+}
+
+.filter-group.time-input {
+    min-width: 120px;
+}
+
+.filter-group label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #495057;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-group select,
+.filter-group input[type="text"],
+.filter-group input[type="date"],
+.filter-group input[type="time"] {
+    padding: 10px 12px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+    transition: border-color 0.3s;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+
+
+/* Live Notification Toast */
+.live-notification {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    padding: 20px;
+    min-width: 350px;
+    max-width: 400px;
+    z-index: 9998;
+    transform: translateX(450px);
+    transition: transform 0.4s ease;
+}
+
+.live-notification.show {
+    transform: translateX(0);
+}
+
+.notification-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.notification-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.notification-icon.new {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.notification-icon.critical {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    animation: shake 0.5s;
+}
+
+.notification-icon.status {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 4px;
+}
+
+.notification-message {
+    font-size: 13px;
+    color: #6c757d;
+    line-height: 1.5;
+}
+
+.notification-time {
+    font-size: 11px;
+    color: #adb5bd;
+    margin-top: 8px;
+}
+
+.notification-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.notification-close:hover {
+    color: #495057;
+}
+
+/* Live Stats Animation */
+.stat-number.updating {
+    animation: numberPop 0.5s ease;
+}
+
+@keyframes numberPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); color: #28a745; }
+    100% { transform: scale(1); }
+}
+
+/* Connection Status Modal */
+.connection-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    z-index: 10000;
+    min-width: 300px;
+    text-align: center;
+    display: none;
+}
+
+.connection-modal.show {
+    display: block;
+    animation: fadeInScale 0.3s ease;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.connection-spinner {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 20px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .live-notification {
+        right: 10px;
+        min-width: auto;
+        max-width: calc(100% - 20px);
+    }
+    
+    
+}
+/* Quick Filter Buttons */
+.quick-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.quick-filter-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+    transition: all 0.3s;
+}
+
+.quick-filter-btn:hover {
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    border-color: #007bff;
+    color: #007bff;
+    transform: translateY(-2px);
+}
+
+.quick-filter-btn.active {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border-color: #0056b3;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+}
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+      .btn-search, .btn-clear, .btn-reset-date {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .quick-filters {
+        flex-direction: column;
+    }
+    
+    .quick-filter-btn {
+        width: 100%;
+    }
+}
+
+.btn-search {
+    background: #007bff;
+    color: white;
+}
+
+.btn-search:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+}
+
+.btn-clear {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-clear:hover {
+    background: #545b62;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(108,117,125,0.3);
+}
+
+.btn-reset-date {
+    background: #ffc107;
+    color: #212529;
+}
+
+.btn-reset-date:hover {
+    background: #e0a800;
+    transform: translateY(-1px);
+}
+
+.active-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #007bff;
+    color: white;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.filter-tag .remove {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.filter-tag .remove:hover {
+    color: #ff4444;
+}
+        /* Modal Section Styles - ADD THIS */
+.modal-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.modal-section h4 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-section.incident-details {
+    background: linear-gradient(135deg, #fff3cd 0%, #fff8e1 100%);
+    border-left-color: #ffc107;
+}
+
+.modal-section.location-data {
+    background: linear-gradient(135deg, #e3f2fd 0%, #f0f4ff 100%);
+    border-left-color: #6f42c1;
+}
+
+.detail-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 13px;
+}
+
+.detail-value {
+    color: #6c757d;
+    font-size: 13px;
+    word-break: break-word;
+}
+
+.detail-description {
+    padding: 15px;
+    background: white;
+    border-radius: 6px;
+    margin-top: 10px;
+    line-height: 1.8;
+}
+
+/* Modal Footer Styles - ADD THIS */
+#complaintModalFooter {
+    padding: 20px 25px;
+    border-top: 2px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 0 0 12px 12px;
+}
+
+#complaintModalFooter button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#complaintModalFooter button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Location Popup Styles */
+.location-popup {
+    font-size: 13px;
+}
+
+.location-popup h4 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+    font-size: 15px;
+}
+
+.location-popup p {
+    margin: 6px 0;
+    color: #495057;
+}
+
+.popup-status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-top: 8px;
+}
+
+.popup-status.NEW { background: #cce5ff; color: #004085; }
+.popup-status.ASSIGNED { background: #fff3cd; color: #856404; }
+.popup-status.IN_PROGRESS { background: #d1ecf1; color: #0c5460; }
+.popup-status.RESOLVED { background: #d4edda; color: #155724; }
+
+/* Pulse animation for refresh indicator */
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* Map Legend Styles */
+.map-legend {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    font-size: 12px;
+}
+
+.map-legend h4 {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0;
+}
+
+.legend-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.legend-icon.critical { background: #b71c1c; }
+.legend-icon.high { background: #f44336; }
+.legend-icon.resolved { background: #2196f3; }
+
+        /* Table Styles */
+        .complaints-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #dee2e6;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            font-weight: 700;
+            color: #495057;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 12px;
+        }
+        
+        tbody tr {
+            transition: background-color 0.2s;
+        }
+        
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .priority-badge, .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+
+        .priority-critical {
+            background: linear-gradient(135deg, #b71c1c 0%, #d32f2f 100%);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(183, 28, 28, 0.5);
+            animation: pulseGlow 2s infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { 
+                box-shadow: 0 0 10px rgba(183, 28, 28, 0.5);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 20px rgba(183, 28, 28, 0.8);
+                transform: scale(1.05);
+            }
+        }
+
+        .priority-high { 
+            background: linear-gradient(135deg, #f44336 0%, #e57373 100%);
+            color: white;
+            font-weight: 700;
+        }
+
+        .status-NEW { background: #cce5ff; color: #004085; }
+        .status-ASSIGNED { background: #fff3cd; color: #856404; }
+        .status-IN_PROGRESS { background: #d1ecf1; color: #0c5460; }
+        .status-RESOLVED { background: #d4edda; color: #155724; }
+
+        .btn {
+            padding: 7px 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin: 2px;
+        }
+
+        .btn-primary { background: #007bff; color: white; }
+        .btn-primary:hover { 
+            background: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0,123,255,0.4);
+        }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { 
+            background: #c82333;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(220,53,69,0.4);
+        }
+
+        .left-side {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .right-side {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .agent-queue {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .scroll-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .scroll-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .scroll-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .queue-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 15px;
+            border-left: 5px solid #007bff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .queue-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .queue-card h3 {
+            margin: 0 0 12px 0;
+            font-size: 15px;
+            color: #495057;
+            font-weight: 700;
+        }
+
+        .queue-body p {
+            margin: 6px 0;
+            font-size: 13px;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge.high { background: #f8d7da; color: #721c24; }
+        .badge.critical { 
+            background: #b71c1c;
+            color: #fff;
+            animation: pulseGlow 2s infinite;
+        }
+
+        .resume-btn {
+            background: linear-gradient(135deg, #28a745 0%, #34ce57 100%);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            width: 100%;
+            margin-top: 12px;
+            transition: all 0.3s;
+        }
+
+        .resume-btn:hover {
+            background: linear-gradient(135deg, #1e7e34 0%, #28a745 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40,167,69,0.4);
+        }
+
+        .analytics {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 15px;
+        }
+
+        .analytics-card {
+            text-align: center;
+            padding: 16px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .analytics-card:hover {
+            transform: scale(1.05);
+        }
+
+        .analytics-number {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .analytics-label {
+            font-size: 11px;
+            color: #6c757d;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chart-container {
+            padding: 15px;
+            height: 250px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.7);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .modal-content {
+            background: #fff;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 550px;
+            max-width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideIn 0.4s ease;
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 2px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .modal-header h5 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .modal-body {
+            padding: 25px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+            transition: color 0.2s;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-close:hover {
+            color: #495057;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #28a745;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 10px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1100;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .notification.show {
+            display: block;
+            animation: slideInRight 0.4s ease;
+        }
+        
+        .notification.error {
+            background: #dc3545;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { 
+                transform: translateY(-50px); 
+                opacity: 0; 
+            }
+            to { 
+                transform: translateY(0); 
+                opacity: 1; 
+            }
+        }
+
+        @keyframes slideInRight {
+            from { 
+                transform: translateX(100%); 
+                opacity: 0; 
+            }
+            to { 
+                transform: translateX(0); 
+                opacity: 1; 
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 70% 30%;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-group {
+                min-width: auto;
+                width: 100%;
+            }
+
+            #map {
+                height: 50vh;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header with User Menu -->
+    <div class="header">
+    <!-- Logo Section (Left) -->
+    <div class="header-logo">
+        <img src="https://i.postimg.cc/Ssy1ttW0/rara.jpg" alt="ILECO-1 Logo" onerror="this.style.display='none'">
+    </div>
+
+    <!-- Center Content -->
+    <div class="header-center">
+        <h1>
+            <span class="company-name">ILECO-1</span>
+            <span class="dashboard-title">Complaints Monitoring Dashboard</span>
+        </h1>
+        <p>Real-Time Customer Service Dashboard with Location Tracking</p>
+</div>
+
+<div class="live-notification" id="liveNotification">
+    <button class="notification-close" onclick="closeLiveNotification()">&times;</button>
+    <div class="notification-header">
+        <div class="notification-icon" id="notificationIcon">🔔</div>
+        <div class="notification-content">
+            <div class="notification-title" id="notificationTitle">Notification</div>
+            <div class="notification-message" id="notificationMessage">Message content</div>
+        </div>
+    </div>
+    <div class="notification-time" id="notificationTime"></div>
+</div>
+
+<div class="connection-modal" id="connectionModal">
+    <div class="connection-spinner"></div>
+</div>
+
+    <!-- User Menu (Right) -->
+    <div class="user-menu">
+        <div class="user-info-btn" onclick="toggleUserMenu()">
+            <div class="user-avatar">👤</div>
+            <div style="text-align: left;">
+                <div style="font-size: 14px;">{{ user_full_name or current_user }}</div>
+                <div style="font-size: 11px; opacity: 0.8;">{{ user_role|upper if user_role else 'OPERATOR' }}</div>
+            </div>
+            <span style="font-size: 12px;">▼</span>
+        </div>
+        
+        <div class="user-dropdown" id="userDropdown">
+            <div class="user-dropdown-header">
+                <h4>{{ user_full_name or current_user }}</h4>
+                <p>
+                    <span class="user-badge {{ 'admin' if user_role == 'admin' else '' }}">
+                        {{ user_role|upper if user_role else 'OPERATOR' }}
+                    </span>
+                </p>
+            </div>
+            
+            <div class="user-dropdown-menu">
+                <a href="#" class="user-dropdown-item" onclick="alert('Profile page coming soon!'); return false;">
+                    <span>👤</span>
+                    <span>My Profile</span>
+                </a>
+                
+                <a href="#" class="user-dropdown-item" onclick="alert('Settings page coming soon!'); return false;">
+                    <span>⚙️</span>
+                    <span>Settings</span>
+                </a>
+                
+                {% if user_role == 'admin' %}
+                <a href="/admin/users" class="user-dropdown-item">
+                    <span>👥</span>
+                    <span>Manage Users</span>
+                </a>
+                {% endif %}
+                
+                <a href="/logout" class="user-dropdown-item logout">
+                    <span>🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div class="dashboard">
+        <!-- Left Side - Main Content -->
+        <div class="left-side">
+            <!-- Statistics Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-circle-bg red"></div>
+                    <div class="stat-number urgent" id="statTotalActive">{{ complaints|length if complaints else 0 }}</div>
+                    <div class="stat-label">Total Active</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-circle-bg yellow"></div>
+                    <div class="stat-number warning" id="statInQueue">{{ queue|length if queue else 0 }}</div>
+                    <div class="stat-label">In Queue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-circle-bg green"></div>
+                    <div class="stat-number success" id="statResolvedToday">{{ resolved_today if resolved_today else 0 }}</div>
+                    <div class="stat-label">Resolved Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-circle-bg blue"></div>
+                    <div class="stat-number info" id="statCritical">{{ critical_count if critical_count else 0 }}</div>
+                    <div class="stat-label">⚠️ Critical</div>
+                </div>
+            </div>
+
+            <!-- Map Section -->
+            <div class="map-section">
+                <div class="section-header">
+                    📍 Live Complaints Location Map
+                    <div style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
+                        <span style="font-size: 12px; font-weight: 600; color: #6c757d;">Showing: <span id="mapMarkerCount">0</span> locations</span>
+                    </div>
+                </div>
+                
+                <div id="map"></div>
+                <div class="map-controls">
+                    <input type="text" id="addressSearch" placeholder="Search for a location...">
+                    <button onclick="geocodeAddress()">🔍 Search</button>
+                    <button onclick="getCurrentLocation()">📍 My Location</button>
+                    <button onclick="loadComplaintsOnMap()">🔄 Refresh Map</button>
+                </div>
+            </div>
+
+            <!-- Complaints Section -->
+            <div class="complaints-section">
+                <div class="section-header">
+                    📋 Recent Complaints & Agent Requests
+                </div>
+                
+                <!-- Filters -->
+                <!-- Enhanced Filters Section -->
+<div class="filters">
+    <form method="GET" id="filterForm" style="width: 100%;">
+        <div class="filter-section">
+            <!-- Quick Date Filters -->
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 13px; font-weight: 700; color: #495057; margin-bottom: 8px; display: block;">
+                    ⚡ Quick Filters
+                </label>
+                <div class="quick-filters">
+                    <button type="button" class="quick-filter-btn" onclick="setQuickFilter('today')">
+                        📅 Today
+                    </button>
+                    <button type="button" class="quick-filter-btn" onclick="setQuickFilter('yesterday')">
+                        📅 Yesterday
+                    </button>
+                    <button type="button" class="quick-filter-btn" onclick="setQuickFilter('this_week')">
+                        📅 This Week
+                    </button>
+                    <button type="button" class="quick-filter-btn" onclick="setQuickFilter('last_week')">
+                        📅 Last Week
+                    </button>
+                    <button type="button" class="quick-filter-btn" onclick="setQuickFilter('this_month')">
+                        📅 This Month
+                    </button>
+                    <button type="button" class="quick-filter-btn" onclick="setQuickFilter('last_7_days')">
+                        📅 Last 7 Days
+                    </button>
+                    <button type="button" class="quick-filter-btn" onclick="setQuickFilter('last_30_days')">
+                        📅 Last 30 Days
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Row 1: Search, Status, Priority, Type -->
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="search">🔍 Search</label>
+                    <input type="text" 
+                           name="search" 
+                           id="search" 
+                           value="{{ current_search if current_search else '' }}"
+                           placeholder="Name or Customer ID">
+                </div>
+
+                <div class="filter-group">
+                    <label for="status">Status</label>
+                    <select name="status" id="status">
+                        <option value="All Status" {{ 'selected' if current_status == 'All Status' else '' }}>All Status</option>
+                        <option value="NEW" {{ 'selected' if current_status == 'NEW' else '' }}>New</option>
+                        <option value="ASSIGNED" {{ 'selected' if current_status == 'ASSIGNED' else '' }}>Assigned</option>
+                        <option value="IN_PROGRESS" {{ 'selected' if current_status == 'IN_PROGRESS' else '' }}>In Progress</option>
+                        <option value="RESOLVED" {{ 'selected' if current_status == 'RESOLVED' else '' }}>Resolved</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="priority">Priority</label>
+                    <select name="priority" id="priority">
+                        <option value="All Priorities" {{ 'selected' if current_priority == 'All Priorities' else '' }}>All Priorities</option>
+                        <option value="CRITICAL" {{ 'selected' if current_priority == 'CRITICAL' else '' }}>⚠️ Critical</option>
+                        <option value="HIGH" {{ 'selected' if current_priority == 'HIGH' else '' }}>🔴 High</option>
+                        <option value="MEDIUM" {{ 'selected' if current_priority == 'MEDIUM' else '' }}>🟡 Medium</option>
+                        <option value="LOW" {{ 'selected' if current_priority == 'LOW' else '' }}>🟢 Low</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="type">Type</label>
+                    <select name="type" id="type">
+                        <option value="All Types" {{ 'selected' if current_type == 'All Types' else '' }}>All Types</option>
+                        <option value="POWER OUTAGE" {{ 'selected' if current_type == 'POWER OUTAGE' else '' }}>⚡ Power Outage</option>
+                        <option value="SERVICE" {{ 'selected' if current_type == 'SERVICE' else '' }}>🔧 Service</option>
+                        <option value="BILLING" {{ 'selected' if current_type == 'BILLING' else '' }}>💳 Billing</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Filter Row 2: Date and Time Range -->
+            <div class="filter-row">
+                <div class="filter-group date-input">
+                    <label for="date_from">📅 Date From</label>
+                    <input type="date" 
+                           name="date_from" 
+                           id="date_from" 
+                           value="{{ current_date_from if current_date_from else '' }}">
+                </div>
+
+                <div class="filter-group time-input">
+                    <label for="time_from">🕐 Time From</label>
+                    <input type="time" 
+                           name="time_from" 
+                           id="time_from" 
+                           value="{{ current_time_from if current_time_from else '' }}">
+                </div>
+
+                <div class="filter-group date-input">
+                    <label for="date_to">📅 Date To</label>
+                    <input type="date" 
+                           name="date_to" 
+                           id="date_to" 
+                           value="{{ current_date_to if current_date_to else '' }}">
+                </div>
+
+                <div class="filter-group time-input">
+                    <label for="time_to">🕐 Time To</label>
+                    <input type="time" 
+                           name="time_to" 
+                           id="time_to" 
+                           value="{{ current_time_to if current_time_to else '' }}">
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="filter-actions">
+                    <button type="submit" class="btn-search">🔍 Apply</button>
+                    <button type="button" class="btn-reset-date" onclick="clearDateFilters()">📅 Reset Date</button>
+                    <button type="button" class="btn-clear" onclick="clearAllFilters()">✖ Clear All</button>
+                </div>
+            </div>
+
+            <!-- Active Filters Display -->
+            <div id="activeFilters" class="active-filters" style="display: none;">
+                <!-- Active filters will be dynamically added here -->
+            </div>
+        </div>
+    </form>
+    </div>
+    <div class="export-buttons" style="display: flex; gap: 10px; margin: 20px 0;">
+    <button onclick="exportToCSV()" class="btn btn-primary" style="background: #28a745;">
+        📥 Export to CSV
+    </button>
+    <button onclick="exportToExcel()" class="btn btn-primary" style="background: #17a2b8;">
+        📊 Export to Excel
+    </button>
+</div>
+
+                <!-- Complaints Table -->
+                <div class="table-container">
+                    <table id="complaintsTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Time</th>
+                                <th>Customer</th>
+                                <th>Job Order</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Source</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if complaints %}
+                                {% for complaint in complaints %}
+                                <tr data-table="{{ complaint.table }}" data-id="{{ complaint.record_id }}">
+                                    <td><strong>#{{ loop.index }}</strong></td>
+                                    <td>{{ complaint.time if complaint.time else 'N/A' }}</td>
+                                    <td>{{ complaint.customer_id if complaint.customer_id else 'N/A' }}</td>
+                                    <td class="job-order-cell">{{ complaint.job_order_id if complaint.job_order_id else '-' }}</td>
+                                    <td>{{ complaint.issue_type if complaint.issue_type else 'N/A' }}</td>
+                                    <td>{{ complaint.description if complaint.description else 'No description' }}</td>
+                                    <td>
+                                        {% if complaint.priority %}
+                                        <span class="priority-badge priority-{{ complaint.priority|lower }}">
+                                            {{ complaint.priority }}
+                                        </span>
+                                        {% else %}
+                                        <span class="priority-badge priority-high">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="status-cell">
+                                        {% if complaint.status %}
+                                        <span class="status-badge status-{{ complaint.status }}">
+                                            {{ complaint.status }}
+                                        </span>
+                                        {% else %}
+                                        <span class="status-badge status-NEW">NEW</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ complaint.source if complaint.source else 'N/A' }}</td>
+                                    <td>
+                                        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                            <button class="btn btn-primary view-complaint"
+                                                    data-table="{{ complaint.table }}"
+                                                    data-id="{{ complaint.record_id }}">
+                                                👁️ View
+                                            </button>
+                                            <button class="btn btn-danger"
+                                                    onclick="removeComplaint('{{ complaint.table }}', '{{ complaint.record_id }}')">
+                                                🗑️ Remove
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="10" style="text-align: center; padding: 50px; color: #6c757d; font-size: 16px;">
+                                        <div>📭 No complaints found matching your criteria.</div>
+                                        <div style="font-size: 14px; margin-top: 10px;">Try adjusting your filters or clear them to see all complaints.</div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Sidebar -->
+        <div class="right-side">
+            <!-- Agent Queue -->
+            <div class="agent-queue">
+                <div class="section-header">👥 Agent Queue</div>
+                <div id="agentQueueList" class="scroll-container">
+                    {% if queue %}
+                        {% for row in queue %}
+                            <div class="queue-card">
+                                <h3>🎫 Agent Assignment</h3>
+                                <div class="queue-body">
+                                    <p><strong>Name:</strong> {{ row['customer'] if row['customer'] else 'N/A' }}</p>
+                                    <p><strong>Concern:</strong> 
+                                        {{ (row['description'][:50] + '...') if row['description'] and row['description']|length > 50 else (row['description'] if row['description'] else 'N/A') }}
+                                    </p>
+                                    <p><strong>Contact:</strong> {{ row['contact'] if row['contact'] else 'N/A' }}</p>
+                                    <p><strong>Priority:</strong>
+                                        {% if row['priority'] %}
+                                        <span class="badge {{ row['priority']|lower }}">{{ row['priority']|capitalize }}</span>
+                                        {% else %}
+                                        <span class="badge high">N/A</span>
+                                        {% endif %}
+                                    </p>
+                                    <p><strong>Time:</strong> {{ row['time'] if row['time'] else 'N/A' }}</p>
+                                    <p><strong>User ID:</strong> {{ row['customerId'] if row['customerId'] else 'N/A' }}</p>
+                                    {% if row['id'] and row['customerId'] %}
+                                    <form action="/resume_conversation/{{ row['id'].replace('AQ-', '')|int }}" method="post">
+                                        <input type="hidden" name="user_id" value="{{ row['customerId'] }}">
+                                        <button type="submit" class="resume-btn">▶️ Resume Conversation</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="text-align: center; color: #666; padding: 40px;">
+                            <div style="font-size: 48px; margin-bottom: 10px;">✅</div>
+                            <p style="font-weight: 600;">No users in queue</p>
+                            <p style="font-size: 12px; color: #999;">All caught up!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Analytics -->
+            <div class="analytics">
+                <div class="section-header">📊 Today's Analytics</div>
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <div class="analytics-number" style="color: #dc3545;">{{ power_outage_count if power_outage_count is defined else 0 }}</div>
+                        <div class="analytics-label">⚡ Outages</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="analytics-number" style="color: #ffc107;">{{ billing_count if billing_count is defined else 0 }}</div>
+                        <div class="analytics-label">💳 Billing</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="analytics-number" style="color: #17a2b8;">{{ technical_count if technical_count is defined else 0 }}</div>
+                        <div class="analytics-label">🔧 Technical</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="analytics-number" style="color: #28a745;">{{ service_count if service_count is defined else 0 }}</div>
+                        <div class="analytics-label">📞 Service</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="complaintChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+<div class="modal" id="complaintModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 id="complaintModalLabel">Complaint Details</h5>
+            <button type="button" class="btn-close" onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-body" id="complaintModalBody">
+            <div class="loading-spinner"></div>
+        </div>
+        <!-- ✅ ADD THIS FOOTER SECTION -->
+        <div id="complaintModalFooter" style="display: none;">
+            <div>
+                <strong id="currentStatus">Status: Loading...</strong>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button id="assignJobOrder" class="btn btn-primary" style="background: #007bff;">
+                    📋 Assign Job Order
+                </button>
+                <button id="updateStatusInProgress" class="btn btn-primary" style="background: #17a2b8;">
+                    ⏳ Mark In Progress
+                </button>
+                <button id="updateStatusResolved" class="btn btn-primary" style="background: #28a745;">
+                    ✅ Mark Resolved
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        Action completed successfully!
+    </div>
+
+    <!-- Real-time Update Indicator -->
+    <div class="update-indicator" id="updateIndicator">
+        <div class="update-pulse"></div>
+        <span>Dashboard Updated</span>
+    </div>
+
+    <script>
+
+        // ============================================
+//  WEBSOCKET REAL-TIME FEATURES
+// ============================================
+
+let socket = null;
+let reconnectAttempts = 0;
+let maxReconnectAttempts = 5;
+let notificationSound = null;
+
+// Initialize WebSocket connection
+function initializeWebSocket() {
+    console.log('🔌 Initializing WebSocket connection...');
+    
+    // Create notification sound (simple beep)
+    notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZjjkHGGS57OilUg8MTKXh8bVsIAU2jdXxzHgrBSp+y/HajToIGGa8');
+    
+    // Connect to Socket.IO
+    socket = io({
+        transports: ['websocket'],
+        upgrade: false,
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: maxReconnectAttempts
+    });
+    
+    // Connection successful
+    socket.on('connect', function() {
+        console.log('✅ WebSocket connected');
+        reconnectAttempts = 0;
+        updateConnectionStatus('connected', 'Real-time updates active');
+        hideConnectionModal();
+        
+        // Request initial stats
+        socket.emit('request_stats');
+    });
+    
+    // Connection error
+    socket.on('connect_error', function(error) {
+        console.error('❌ WebSocket connection error:', error);
+        reconnectAttempts++;
+        
+        if (reconnectAttempts < maxReconnectAttempts) {
+            updateConnectionStatus('connecting', 'Reconnecting... (' + reconnectAttempts + '/' + maxReconnectAttempts + ')');
+            showConnectionModal('Reconnecting...', 'Attempt ' + reconnectAttempts + ' of ' + maxReconnectAttempts);
+        } else {
+            updateConnectionStatus('disconnected', 'Real-time updates unavailable');
+            showConnectionModal('Connection Failed', 'Please refresh the page');
+        }
+    });
+    
+    // Disconnection
+    socket.on('disconnect', function() {
+        console.log('👋 WebSocket disconnected');
+        updateConnectionStatus('disconnected', 'Real-time updates paused');
+    });
+    
+    // Connection success message
+    socket.on('connection_success', function(data) {
+        console.log('📡 Connection success:', data);
+        showLiveNotification('success', 'Connected', data.message);
+    });
+    
+    // User count update
+    socket.on('user_count_update', function(data) {
+        console.log('👥 Active users:', data.active_users);
+        document.getElementById('activeUsersCount').textContent = data.active_users;
+    });
+    
+    // Stats update
+    socket.on('stats_update', function(data) {
+        console.log('📊 Stats update received:', data);
+        updateDashboardStatsRealtime(data);
+    });
+    
+    // New complaint notification
+    socket.on('new_complaint', function(data) {
+        console.log('🆕 New complaint:', data);
+        
+        playNotificationSound();
+        showLiveNotification(
+            'new',
+            'New Complaint Received',
+            data.complaint.priority + ' priority: ' + data.complaint.issue_type,
+            data.complaint
+        );
+        
+        // Reload map and table
+        loadComplaintsOnMap();
+    });
+    
+    // Status update notification
+    socket.on('status_update', function(data) {
+        console.log('🔄 Status update:', data);
+        
+        showLiveNotification(
+            'status',
+            'Status Updated',
+            'Complaint ' + data.record_id + ': ' + data.old_status + ' → ' + data.new_status
+        );
+        
+        // Update table row if visible
+        updateTableRowStatusRealtime(data.table, data.record_id, data.new_status);
+    });
+    
+    // Critical alert
+    socket.on('critical_alert', function(data) {
+        console.log('🚨 CRITICAL ALERT:', data);
+        
+        // Play urgent sound
+        playNotificationSound(true);
+        
+        // Show prominent notification
+        showLiveNotification(
+            'critical',
+            '🚨 CRITICAL ALERT',
+            data.message,
+            data.complaint,
+            true
+        );
+        
+        // Flash the screen
+        flashScreen();
+        
+        // Reload map and table
+        loadComplaintsOnMap();
+    });
+}
+
+// Update connection status bar
+function updateConnectionStatus(status, message) {
+    const statusBar = document.getElementById('realtimeStatusBar');
+    const statusText = document.getElementById('connectionStatus');
+    
+    statusBar.classList.remove('disconnected', 'connecting');
+    
+    if (status === 'connected') {
+        statusBar.classList.add('show');
+        statusText.innerHTML = '<span class="sound-wave">' +
+            '<span class="sound-bar"></span>' +
+            '<span class="sound-bar"></span>' +
+            '<span class="sound-bar"></span>' +
+            '</span>' +
+            message;
+    } else if (status === 'connecting') {
+        statusBar.classList.add('show', 'connecting');
+        statusText.textContent = message;
+    } else {
+        statusBar.classList.add('show', 'disconnected');
+        statusText.textContent = message;
+    }
+}
+
+// Show/hide connection modal
+function showConnectionModal(title, message) {
+    const modal = document.getElementById('connectionModal');
+    document.getElementById('connectionModalTitle').textContent = title;
+    document.getElementById('connectionModalMessage').textContent = message;
+    modal.classList.add('show');
+}
+
+function hideConnectionModal() {
+    document.getElementById('connectionModal').classList.remove('show');
+}
+
+// Show live notification
+function showLiveNotification(type, title, message, data, persistent) {
+    data = data || null;
+    persistent = persistent || false;
+    
+    const notification = document.getElementById('liveNotification');
+    const icon = document.getElementById('notificationIcon');
+    const titleEl = document.getElementById('notificationTitle');
+    const messageEl = document.getElementById('notificationMessage');
+    const timeEl = document.getElementById('notificationTime');
+    
+    // Set icon based on type
+    const icons = {
+        'new': '🆕',
+        'critical': '🚨',
+        'status': '✅',
+        'success': '✓'
+    };
+    
+    icon.textContent = icons[type] || '🔔';
+    icon.className = 'notification-icon ' + type;
+    
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    timeEl.textContent = 'Just now • ' + new Date().toLocaleTimeString();
+    
+    notification.classList.add('show');
+    
+    // Auto-hide after 5 seconds unless persistent
+    if (!persistent) {
+        setTimeout(function() {
+            notification.classList.remove('show');
+        }, 5000);
+    }
+}
+
+function closeLiveNotification() {
+    document.getElementById('liveNotification').classList.remove('show');
+}
+
+// Update dashboard stats in real-time
+function updateDashboardStatsRealtime(stats) {
+    const elements = {
+        'statTotalActive': stats.total_active,
+        'statInQueue': stats.in_queue,
+        'statCritical': stats.critical_count,
+        'statResolvedToday': stats.resolved_today
+    };
+    
+    for (const id in elements) {
+        const value = elements[id];
+        const element = document.getElementById(id);
+        if (element && element.textContent !== value.toString()) {
+            element.textContent = value;
+            element.classList.add('updating');
+            setTimeout(function() {
+                element.classList.remove('updating');
+            }, 500);
+        }
+    }
+}
+
+// Update table row status in real-time
+function updateTableRowStatusRealtime(table, recordId, newStatus) {
+    const row = document.querySelector('tr[data-table="' + table + '"][data-id="' + recordId + '"]');
+    
+    if (row) {
+        const statusCell = row.querySelector('.status-cell');
+        if (statusCell) {
+            statusCell.innerHTML = '<span class="status-badge status-' + newStatus + '">' + newStatus + '</span>';
+            
+            // Highlight row briefly
+            row.style.transition = 'background-color 0.5s';
+            row.style.backgroundColor = '#d4edda';
+            setTimeout(function() {
+                row.style.backgroundColor = '';
+            }, 2000);
+        }
+    }
+}
+
+// Play notification sound
+function playNotificationSound(urgent) {
+    urgent = urgent || false;
+    
+    if (notificationSound) {
+        notificationSound.volume = urgent ? 0.7 : 0.3;
+        notificationSound.play().catch(function(e) {
+            console.log('Could not play sound:', e);
+        });
+    }
+}
+
+// Flash screen for critical alerts
+function flashScreen() {
+    const flash = document.createElement('div');
+    flash.style.cssText = 
+        'position: fixed;' +
+        'top: 0;' +
+        'left: 0;' +
+        'right: 0;' +
+        'bottom: 0;' +
+        'background: rgba(220, 53, 69, 0.3);' +
+        'z-index: 9999;' +
+        'pointer-events: none;' +
+        'animation: flashEffect 0.5s ease-in-out 3;';
+    
+    const style = document.createElement('style');
+    style.textContent = 
+        '@keyframes flashEffect {' +
+        '    0%, 100% { opacity: 0; }' +
+        '    50% { opacity: 1; }' +
+        '}';
+    
+    document.head.appendChild(style);
+    document.body.appendChild(flash);
+    
+    setTimeout(function() {
+        flash.remove();
+        style.remove();
+    }, 1500);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Initializing Real-Time Features...');
+    
+    // Show connection modal initially
+    showConnectionModal('Connecting...', 'Establishing real-time connection');
+    
+    // Initialize WebSocket after a brief delay
+    setTimeout(function() {
+        initializeWebSocket();
+    }, 500);
+});
+
+
+// Manual reconnect function
+function manualReconnect() {
+    console.log('🔄 Manual reconnect triggered');
+    reconnectAttempts = 0;
+    showConnectionModal('Reconnecting...', 'Please wait...');
+    
+    if (socket) {
+        socket.disconnect();
+        socket.connect();
+    } else {
+        initializeWebSocket();
+    }
+}
+
+// Add reconnect button to disconnected status bar
+document.addEventListener('DOMContentLoaded', function() {
+    const statusBar = document.getElementById('realtimeStatusBar');
+    
+    // Add click handler for manual reconnect when disconnected
+    statusBar.addEventListener('click', function() {
+        if (statusBar.classList.contains('disconnected')) {
+            manualReconnect();
+        }
+    });
+});
+
+// Visibility change handler - pause/resume updates when tab hidden
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        console.log('⏸️ Tab hidden - reducing update frequency');
+        // Could reduce polling frequency here if needed
+    } else {
+        console.log('▶️ Tab visible - resuming normal updates');
+        if (socket && socket.connected) {
+            socket.emit('request_stats');
+        }
+    }
+});
+
+// Heartbeat to keep connection alive
+setInterval(function() {
+    if (socket && socket.connected) {
+        socket.emit('ping');
+    }
+}, 30000); // Every 30 seconds
+
+// Enhanced notification with action button
+function showEnhancedNotification(type, title, message, actionText, actionCallback) {
+    const notification = document.getElementById('liveNotification');
+    const icon = document.getElementById('notificationIcon');
+    const titleEl = document.getElementById('notificationTitle');
+    const messageEl = document.getElementById('notificationMessage');
+    const timeEl = document.getElementById('notificationTime');
+    
+    const icons = {
+        'new': '🆕',
+        'critical': '🚨',
+        'status': '✅',
+        'success': '✓'
+    };
+    
+    icon.textContent = icons[type] || '🔔';
+    icon.className = `notification-icon ${type}`;
+    
+    titleEl.textContent = title;
+    messageEl.innerHTML = message;
+    
+    // Add action button if provided
+    if (actionText && actionCallback) {
+        const actionBtn = document.createElement('button');
+        actionBtn.textContent = actionText;
+        actionBtn.style.cssText = `
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s;
+        `;
+        actionBtn.onmouseover = () => actionBtn.style.background = '#0056b3';
+        actionBtn.onmouseout = () => actionBtn.style.background = '#007bff';
+        actionBtn.onclick = () => {
+            actionCallback();
+            closeLiveNotification();
+        };
+        messageEl.appendChild(actionBtn);
+    }
+    
+    timeEl.textContent = `Just now • ${new Date().toLocaleTimeString()}`;
+    
+    notification.classList.add('show');
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 8000);
+}
+
+// Browser notification API integration (optional)
+function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                console.log('✅ Browser notifications enabled');
+            }
+        });
+    }
+}
+
+function showBrowserNotification(title, message, priority) {
+    if ('Notification' in window && Notification.permission === 'granted') {
+        const notification = new Notification(title, {
+            body: message,
+            icon: '/static/logo.png', // Your logo path
+            badge: '/static/badge.png',
+            tag: 'ileco-complaint',
+            requireInteraction: priority === 'CRITICAL',
+            vibrate: priority === 'CRITICAL' ? [200, 100, 200] : [100]
+        });
+        
+        notification.onclick = function() {
+            window.focus();
+            notification.close();
+        };
+    }
+}
+
+// Request permission on first interaction
+document.addEventListener('click', function() {
+    requestNotificationPermission();
+}, { once: true });
+
+// Statistics history tracking
+let statsHistory = {
+    total_active: [],
+    critical_count: [],
+    timestamps: []
+};
+
+function trackStatsHistory(stats) {
+    const maxHistory = 20; // Keep last 20 data points
+    
+    statsHistory.total_active.push(stats.total_active);
+    statsHistory.critical_count.push(stats.critical_count);
+    statsHistory.timestamps.push(new Date().toLocaleTimeString());
+    
+    // Keep only last maxHistory items
+    if (statsHistory.total_active.length > maxHistory) {
+        statsHistory.total_active.shift();
+        statsHistory.critical_count.shift();
+        statsHistory.timestamps.shift();
+    }
+}
+
+// Export functions for console debugging
+window.wsDebug = {
+    getSocket: () => socket,
+    getStats: () => statsHistory,
+    reconnect: manualReconnect,
+    testNotification: () => showLiveNotification('new', 'Test', 'This is a test notification'),
+    testCritical: () => showLiveNotification('critical', '🚨 Critical Test', 'Critical alert test', null, false),
+    testSound: () => playNotificationSound(true)
+};
+
+console.log('✅ Real-Time Features Loaded');
+console.log('📋 Debug commands available in console:');
+console.log('   wsDebug.getSocket() - Get socket instance');
+console.log('   wsDebug.reconnect() - Force reconnect');
+console.log('   wsDebug.testNotification() - Test notification');
+console.log('   wsDebug.testCritical() - Test critical alert');
+console.log('   wsDebug.testSound() - Test notification sound');
+
+// Global Variables
+let map;
+let markers = [];
+let currentComplaintData = null;
+let currentComplaintFullData = null;
+let currentFilters = {};
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMap();
+    initializeEventListeners();
+    initializeChart();
+    captureCurrentFilters();
+    loadComplaintsOnMap();
+});
+
+// Capture current filter values from URL
+function captureCurrentFilters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    currentFilters = {
+        search: urlParams.get('search') || '',
+        status: urlParams.get('status') || 'All Status',
+        priority: urlParams.get('priority') || 'All Priorities',
+        type: urlParams.get('type') || 'All Types',
+        date_from: urlParams.get('date_from') || '',
+        date_to: urlParams.get('date_to') || '',
+        time_from: urlParams.get('time_from') || '',
+        time_to: urlParams.get('time_to') || ''
+    };
+    
+    console.log('Current filters captured:', currentFilters);
+}
+function exportToCSV() {
+    // Get current filter parameters
+    const params = new URLSearchParams(window.location.search);
+    window.location.href = `/api/export_csv?${params.toString()}`;
+}
+
+function exportToExcel() {
+    const params = new URLSearchParams(window.location.search);
+    window.location.href = `/api/export_excel?${params.toString()}`;
+}
+
+// Initialize Map with Satellite View
+function initializeMap() {
+    map = L.map('map').setView([11.5854, 122.7507], 12);
+
+    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    });
+
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri',
+        maxZoom: 19
+    });
+
+    osmLayer.addTo(map);
+
+    const baseLayers = {
+        "🗺️ Street Map": osmLayer,
+        "🛰️ Satellite": satelliteLayer
+    };
+
+    L.control.layers(baseLayers).addTo(map);
+
+    const legend = L.control({ position: 'bottomright' });
+    legend.onAdd = function() {
+        const div = L.DomUtil.create('div', 'map-legend');
+        div.innerHTML = `
+            <h4>Priority Legend</h4>
+            <div class="legend-item">
+                <div class="legend-icon critical"></div>
+                <span>⚠️ Critical</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon high"></div>
+                <span>🔴 High</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon resolved"></div>
+                <span>✅ Resolved</span>
+            </div>
+        `;
+        return div;
+    };
+    legend.addTo(map);
+}
+
+// Load Complaints on Map
+async function loadComplaintsOnMap() {
+    try {
+        console.log('Loading complaints on map with filters:', currentFilters);
+        showUpdateIndicator();
+        
+        const queryParams = new URLSearchParams();
+        if (currentFilters.search) queryParams.append('search', currentFilters.search);
+        if (currentFilters.status && currentFilters.status !== 'All Status') {
+            queryParams.append('status', currentFilters.status);
+        }
+        if (currentFilters.priority && currentFilters.priority !== 'All Priorities') {
+            queryParams.append('priority', currentFilters.priority);
+        }
+        if (currentFilters.type && currentFilters.type !== 'All Types') {
+            queryParams.append('type', currentFilters.type);
+        }
+        if (currentFilters.date_from) queryParams.append('date_from', currentFilters.date_from);
+        if (currentFilters.date_to) queryParams.append('date_to', currentFilters.date_to);
+        if (currentFilters.time_from) queryParams.append('time_from', currentFilters.time_from);
+        if (currentFilters.time_to) queryParams.append('time_to', currentFilters.time_to);
+
+        const url = `/api/complaints_with_location?${queryParams.toString()}`;
+        console.log('Fetching from:', url);
+        
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Failed to fetch complaints: ${response.status}`);
+        
+        const result = await response.json();
+        console.log('API Response:', result);
+        
+        if (!result.success) throw new Error(result.error || 'Unknown error');
+        
+        const complaints = result.complaints;
+        console.log(`Received ${complaints.length} complaints with location`);
+        
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
+
+        complaints.forEach((complaint, index) => {
+            if (complaint.lat && complaint.lng) {
+                const normalizedPriority = (complaint.priority || '').toUpperCase().trim();
+                const normalizedStatus = (complaint.status || 'NEW').toUpperCase().trim();
+                
+                const color = getMarkerColor(normalizedPriority, normalizedStatus);
+                
+                const marker = L.circleMarker([complaint.lat, complaint.lng], {
+                    radius: 12,
+                    fillColor: color,
+                    color: '#fff',
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).addTo(map);
+
+                const popupContent = `
+                    <div class="location-popup">
+                        <h4>${complaint.customer || 'Unknown Customer'}</h4>
+                        <p><strong>📍 Address:</strong> ${complaint.address || 'N/A'}</p>
+                        <p><strong>⚡ Issue:</strong> ${complaint.issueType || 'N/A'}</p>
+                        <p><strong>📞 Contact:</strong> ${complaint.contact || 'N/A'}</p>
+                        <p><strong>⏰ Time:</strong> ${complaint.time || 'N/A'}</p>
+                        <p><strong>🎯 Priority:</strong> <span style="color: ${color}; font-weight: 700;">${normalizedPriority}</span></p>
+                        <p><strong>📋 Job Order:</strong> ${complaint.job_order_id || 'Not assigned'}</p>
+                        <span class="popup-status ${normalizedStatus}">${normalizedStatus}</span>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                markers.push(marker);
+            }
+        });
+
+        document.getElementById('mapMarkerCount').textContent = markers.length;
+        console.log(`✅ Successfully loaded ${markers.length} markers on map`);
+        
+        if (markers.length > 0) {
+            const group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        } else {
+            map.setView([11.5854, 122.7507], 12);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error loading complaints on map:', error);
+        showNotification('Failed to load map data: ' + error.message, 'error');
+    }
+}
+
+function getMarkerColor(priority, status) {
+    const normPriority = (priority || '').toUpperCase().trim();
+    const normStatus = (status || 'NEW').toUpperCase().trim();
+    
+    if (normStatus === 'RESOLVED') {
+        return '#2196f3';
+    }
+    
+    switch(normPriority) {
+        case 'CRITICAL':
+            return '#b71c1c';
+        case 'HIGH':
+            return '#f44336';
+        default:
+            return '#9e9e9e';
+    }
+}
+
+
+async function geocodeAddress() {
+    const address = document.getElementById('addressSearch').value;
+    if (!address) {
+        showNotification('Please enter an address', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/geocode', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ address: address })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            map.setView([data.lat, data.lng], 16);
+            
+            const tempMarker = L.marker([data.lat, data.lng], {
+                icon: L.divIcon({
+                    className: 'custom-div-icon',
+                    html: "<div style='background-color:#4285f4;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);'></div>",
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                })
+            }).addTo(map)
+                .bindPopup(`<strong>📍 Search Result:</strong><br>${data.display_name || address}`)
+                .openPopup();
+            
+            setTimeout(() => map.removeLayer(tempMarker), 15000);
+            showNotification('Location found!');
+        } else {
+            showNotification(data.message || 'Could not find location', 'error');
+        }
+    } catch (error) {
+        console.error('Geocoding error:', error);
+        showNotification('Error finding location', 'error');
+    }
+}
+async function updateStatus(table, recordId, status) {
+    const statusNames = {
+        'IN_PROGRESS': 'In Progress',
+        'RESOLVED': 'Resolved',
+        'ASSIGNED': 'Assigned',
+        'NEW': 'New'
+    };
+    
+    const displayName = statusNames[status] || status;
+    
+    // Confirm the action
+    if (!confirm(`Are you sure you want to mark this complaint as ${displayName}?`)) {
+        return;
+    }
+    
+    console.log(`📝 Updating status: ${table}/${recordId} -> ${status}`);
+    showNotification(`Updating status to ${displayName}...`);
+    
+    try {
+        // Make the API call
+        const response = await fetch(`/update_status/${encodeURIComponent(table)}/${encodeURIComponent(recordId)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: status })
+        });
+        
+        console.log(`Response status: ${response.status}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Update status response:', data);
+        
+        if (data.success) {
+            showNotification(`✅ Status updated to ${displayName} successfully!`);
+            
+            // ✅ Update the table row immediately
+            updateTableRowStatus(table, recordId, status);
+            
+            // ✅ Update the modal if it's still open
+            const currentStatusEl = document.getElementById('currentStatus');
+            if (currentStatusEl) {
+                currentStatusEl.textContent = `Current Status: ${status}`;
+            }
+            
+            // ✅ Hide action buttons if resolved
+            if (status === 'RESOLVED') {
+                const assignJobOrderBtn = document.getElementById('assignJobOrder');
+                const inProgressBtn = document.getElementById('updateStatusInProgress');
+                const resolvedBtn = document.getElementById('updateStatusResolved');
+                
+                if (assignJobOrderBtn) assignJobOrderBtn.style.display = 'none';
+                if (inProgressBtn) inProgressBtn.style.display = 'none';
+                if (resolvedBtn) resolvedBtn.style.display = 'none';
+                
+                // Update footer message
+                const modalFooter = document.getElementById('complaintModalFooter');
+                if (modalFooter) {
+                    const statusDisplay = modalFooter.querySelector('div:first-child');
+                    if (statusDisplay) {
+                        statusDisplay.innerHTML = '<span style="color: #28a745; font-weight: 700;">✅ This complaint has been resolved</span>';
+                    }
+                }
+            }
+            
+            // ✅ Disable In Progress button if status is IN_PROGRESS
+            if (status === 'IN_PROGRESS') {
+                const inProgressBtn = document.getElementById('updateStatusInProgress');
+                if (inProgressBtn) {
+                    inProgressBtn.disabled = true;
+                    inProgressBtn.style.opacity = '0.5';
+                    inProgressBtn.textContent = '✓ In Progress';
+                }
+            }
+            
+            // ✅ Close modal after a brief delay
+            setTimeout(() => {
+                closeModal();
+            }, 1000);
+            
+            // ✅ Reload map to reflect changes
+            loadComplaintsOnMap();
+            
+            // ✅ Update dashboard statistics
+            updateDashboardStats();
+            
+            // ✅ Optional: Reload page to ensure all data is fresh
+            // Uncomment if you want full page reload
+            // setTimeout(() => {
+            //     window.location.reload();
+            // }, 1500);
+            
+        } else {
+            showNotification(`❌ Error: ${data.error || 'Unknown error'}`, 'error');
+        }
+    } catch (error) {
+        console.error('❌ Error updating status:', error);
+        showNotification(`❌ Error: ${error.message}`, 'error');
+    }
+}
+function getCurrentLocation() {
+    if (!navigator.geolocation) {
+        showNotification('Geolocation is not supported by your browser', 'error');
+        return;
+    }
+
+    showNotification('Getting your location...');
+    
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            map.setView([lat, lng], 16);
+            
+            const tempMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: 'custom-div-icon',
+                    html: "<div style='background-color:#34a853;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);'></div>",
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                })
+            }).addTo(map)
+                .bindPopup('📍 Your current location')
+                .openPopup();
+            
+            setTimeout(() => map.removeLayer(tempMarker), 15000);
+            showNotification('Location found!');
+        },
+        (error) => {
+            showNotification('Unable to retrieve your location: ' + error.message, 'error');
+        }
+    );
+}
+
+// Toggle user menu dropdown
+function toggleUserMenu() {
+    const dropdown = document.getElementById('userDropdown');
+    dropdown.classList.toggle('show');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const userMenu = document.querySelector('.user-menu');
+    const dropdown = document.getElementById('userDropdown');
+    
+    if (userMenu && !userMenu.contains(event.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+
+// Prevent dropdown from closing when clicking inside it
+document.getElementById('userDropdown')?.addEventListener('click', function(e) {
+    e.stopPropagation();
+});
+
+// ✅ ENHANCED: View complaint function with better incident details display
+async function handleViewComplaint(event) {
+    const button = event.target.closest('.view-complaint');
+    if (!button) {
+        console.error('❌ View button not found');
+        showNotification('Error: Could not find complaint details', 'error');
+        return;
+    }
+    
+    const table = button.getAttribute('data-table');
+    const id = button.getAttribute('data-id');
+
+    console.log('👁️ Viewing complaint:', { table, id });
+
+    if (!table || !id) {
+        console.error('❌ Missing table or id attributes');
+        showNotification('Error: Invalid complaint data', 'error');
+        return;
+    }
+
+    const modalTitle = document.getElementById('complaintModalLabel');
+    const modalBody = document.getElementById('complaintModalBody');
+    const modalFooter = document.getElementById('complaintModalFooter');
+
+    modalTitle.textContent = 'Loading...';
+    modalBody.innerHTML = '<div class="loading-spinner"></div>';
+    modalFooter.style.display = 'none';
+    openModal();
+
+    currentComplaintData = { table, id };
+
+    try {
+        const url = `/view/${encodeURIComponent(table)}/${encodeURIComponent(id)}`;
+        console.log('📡 Fetching from:', url);
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('📥 Received data:', data);
+
+        modalTitle.textContent = data.title || 'Complaint Details';
+        modalBody.innerHTML = '';
+        currentComplaintFullData = data.details;
+
+        if (data.details && Object.keys(data.details).length > 0) {
+            // ✅ NEW: Smart section rendering for incident details
+            renderComplaintDetails(data.details, modalBody, data.table_type);
+            
+            const status = (data.status_level || 
+                          data.details['Status'] || 
+                          data.details['Current Status'] || 
+                          'NEW').toUpperCase().trim();
+            
+            console.log('📊 Extracted status:', status);
+            
+            const currentStatusEl = document.getElementById('currentStatus');
+            if (currentStatusEl) {
+                currentStatusEl.textContent = `Current Status: ${status}`;
+            }
+            
+            modalFooter.style.display = 'flex';
+            
+            // Attach button listeners
+            setTimeout(() => {
+                attachModalButtonListeners();
+            }, 100);
+            
+            const isResolved = status === 'RESOLVED';
+            const assignJobOrderBtn = document.getElementById('assignJobOrder');
+            const inProgressBtn = document.getElementById('updateStatusInProgress');
+            const resolvedBtn = document.getElementById('updateStatusResolved');
+            
+            if (assignJobOrderBtn) {
+                assignJobOrderBtn.style.display = isResolved ? 'none' : 'inline-block';
+            }
+            if (inProgressBtn) {
+                inProgressBtn.style.display = isResolved ? 'none' : 'inline-block';
+                inProgressBtn.disabled = status === 'IN_PROGRESS';
+                inProgressBtn.style.opacity = status === 'IN_PROGRESS' ? '0.5' : '1';
+                if (status === 'IN_PROGRESS') {
+                    inProgressBtn.textContent = '✓ In Progress';
+                }
+            }
+            if (resolvedBtn) {
+                resolvedBtn.style.display = isResolved ? 'none' : 'inline-block';
+            }
+            
+            const lat = data.details.Latitude || data.details.latitude;
+            const lng = data.details.Longitude || data.details.longitude;
+            
+            if (lat && lng && lat !== 'N/A' && lng !== 'N/A') {
+                try {
+                    jumpToMarkerOnMap(parseFloat(lat), parseFloat(lng));
+                } catch (e) {
+                    console.error('Error jumping to marker:', e);
+                }
+            }
+            
+        } else {
+            modalBody.innerHTML = `
+                <p style="text-align: center; color: #666; padding: 40px;">
+                    No details available for this complaint.
+                </p>
+            `;
+        }
+        
+    } catch (error) {
+        console.error('❌ Error loading complaint:', error);
+        modalTitle.textContent = 'Error Loading Complaint';
+        modalBody.innerHTML = `
+            <p style="text-align: center; color: #e74c3c; padding: 40px;">
+                <strong>Failed to load complaint details</strong><br>
+                <span style="font-size: 14px; color: #666;">${error.message}</span>
+            </p>
+        `;
+    }
+}
+function attachModalButtonListeners() {
+    console.log('📌 Attaching modal button listeners...');
+    
+    const assignJobOrderBtn = document.getElementById('assignJobOrder');
+    const inProgressBtn = document.getElementById('updateStatusInProgress');
+    const resolvedBtn = document.getElementById('updateStatusResolved');
+
+    if (assignJobOrderBtn) {
+        assignJobOrderBtn.onclick = () => {
+            console.log('✓ Assign Job clicked (onclick)');
+            if (currentComplaintData) {
+                assignJobOrder(currentComplaintData.table, currentComplaintData.id);
+            }
+        };
+    }
+
+    if (inProgressBtn) {
+        inProgressBtn.onclick = () => {
+            console.log('✓ In Progress clicked (onclick)');
+            if (currentComplaintData) {
+                updateStatus(currentComplaintData.table, currentComplaintData.id, 'IN_PROGRESS');
+            }
+        };
+    }
+
+    if (resolvedBtn) {
+        resolvedBtn.onclick = () => {
+            console.log('✓ Resolved clicked (onclick)');
+            if (currentComplaintData) {
+                updateStatus(currentComplaintData.table, currentComplaintData.id, 'RESOLVED');
+            }
+        };
+    }
+    
+    console.log('✅ Modal button listeners attached');
+}
+
+
+function jumpToMarkerOnMap(lat, lng) {
+    if (!map || !lat || !lng) return;
+    
+    try {
+        map.setView([lat, lng], 17, {
+            animate: true,
+            duration: 1
+        });
+        
+        markers.forEach(marker => {
+            const markerLatLng = marker.getLatLng();
+            if (Math.abs(markerLatLng.lat - lat) < 0.0001 && 
+                Math.abs(markerLatLng.lng - lng) < 0.0001) {
+                marker.setStyle({
+                    radius: 15,
+                    fillOpacity: 1
+                });
+                
+                setTimeout(() => {
+                    marker.openPopup();
+                }, 500);
+                
+                setTimeout(() => {
+                    marker.setStyle({
+                        radius: 12,
+                        fillOpacity: 0.9
+                    });
+                }, 2000);
+            }
+        });
+        
+        showNotification('📍 Location highlighted on map');
+    } catch (error) {
+        console.error('Error jumping to marker:', error);
+    }
+}
+
+function openModal() {
+    const modal = document.getElementById('complaintModal');
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    const modal = document.getElementById('complaintModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+    currentComplaintData = null;
+    currentComplaintFullData = null;
+}
+// Add debug function to check if complaints are loading
+function debugComplaints() {
+    console.log('🔍 Debugging Complaints Table');
+    
+    const table = document.getElementById('complaintsTable');
+    if (!table) {
+        console.error('❌ Complaints table not found!');
+        return;
+    }
+    
+    const tbody = table.querySelector('tbody');
+    if (!tbody) {
+        console.error('❌ Table body not found!');
+        return;
+    }
+    
+    const rows = tbody.querySelectorAll('tr');
+    console.log(`📊 Found ${rows.length} rows in table`);
+    
+    rows.forEach((row, index) => {
+        const table = row.getAttribute('data-table');
+        const id = row.getAttribute('data-id');
+        const cells = row.querySelectorAll('td');
+        console.log(`Row ${index + 1}:`, {
+            table: table,
+            id: id,
+            cellCount: cells.length,
+            hasViewButton: !!row.querySelector('.view-complaint'),
+            hasRemoveButton: !!row.querySelector('button[onclick*="removeComplaint"]')
+        });
+    });
+    
+    // Check if data is being passed from backend
+    console.log('Checking Flask template data...');
+    fetch('/api/debug_complaints')
+        .then(res => res.json())
+        .then(data => {
+            console.log('📊 Debug API Response:', data);
+            if (data.success) {
+                console.log('✅ Backend is returning data correctly');
+                console.log('Total counts:', data.total_counts);
+            } else {
+                console.error('❌ Backend returned error:', data);
+            }
+        })
+        .catch(err => console.error('❌ Debug API failed:', err));
+}
+
+// Call debug on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Page loaded, running diagnostics...');
+    debugComplaints();
+    
+    // Also check if Flask variables are accessible
+    console.log('Checking Flask template variables...');
+    const tableBody = document.querySelector('#complaintsTable tbody');
+    if (tableBody) {
+        const rows = tableBody.querySelectorAll('tr');
+        if (rows.length === 0 || (rows.length === 1 && rows[0].querySelector('td[colspan]'))) {
+            console.warn('⚠️ No complaint data in table. Possible issues:');
+            console.warn('   1. Backend not returning data to template');
+            console.warn('   2. Jinja2 template not rendering correctly');
+            console.warn('   3. All complaints are hidden');
+            console.warn('   4. Database query returning empty results');
+        }
+    }
+});
+
+function initializeEventListeners() {
+    console.log('🔧 Initializing event listeners...');
+    
+    // ✅ FIX: Use event delegation for view buttons
+    document.addEventListener('click', function(e) {
+        // Check if clicked element is view button
+        const viewButton = e.target.closest('.view-complaint');
+        if (viewButton) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleViewComplaint({ target: viewButton });
+            return;
+        }
+    });
+    
+    console.log('✅ View button listeners attached (event delegation)');
+
+    // Close modal on outside click
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('complaintModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    // Filter form submission
+    const filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        filterForm.addEventListener('submit', function(e) {
+            setTimeout(() => {
+                captureCurrentFilters();
+                loadComplaintsOnMap();
+            }, 100);
+        });
+        console.log('✅ Filter form listener attached');
+    }
+    
+    console.log('✅ All event listeners initialized');
+}
+
+    // Modal close on outside click
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('complaintModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    // Filter form submission
+    const filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        filterForm.addEventListener('submit', function(e) {
+            // Let form submit naturally, then update map
+            setTimeout(() => {
+                captureCurrentFilters();
+                loadComplaintsOnMap();
+            }, 100);
+        });
+        console.log('✅ Filter form listener attached');
+    }
+    
+    console.log('✅ All event listeners initialized');
+
+
+// ✅ IMPROVED: Assign Job Order Function
+async function assignJobOrder(table, recordId) {
+    if (!confirm('Are you sure you want to assign a job order to this complaint?')) {
+        return;
+    }
+    
+    showNotification('Assigning job order...');
+    
+    try {
+        const response = await fetch(`/assign_job_order/${encodeURIComponent(table)}/${encodeURIComponent(recordId)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification(`✅ Job order ${data.converted_unique_id} assigned successfully!`);
+            
+            // ✅ Update the table row immediately
+            updateTableRowStatus(table, recordId, 'ASSIGNED', data.converted_unique_id);
+            
+            // ✅ Update the modal if it's still open
+            const currentStatusEl = document.getElementById('currentStatus');
+            if (currentStatusEl) {
+                currentStatusEl.textContent = 'Current Status: ASSIGNED';
+            }
+            
+            // ✅ Close modal after a brief delay
+            setTimeout(() => {
+                closeModal();
+            }, 500);
+            
+            // ✅ Reload map to reflect changes
+            loadComplaintsOnMap();
+            
+            // ✅ Optional: Reload page to ensure all data is fresh
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showNotification(`Error: ${data.error || 'Unknown error'}`, 'error');
+        }
+    } catch (error) {
+        console.error('Error assigning job order:', error);
+        showNotification(`Error: ${error.message}`, 'error');
+    }
+}
+
+// Improved table row update function
+function updateTableRowStatus(table, recordId, newStatus, jobOrderId = null) {
+    console.log(`📝 Updating table row: ${table}/${recordId} -> ${newStatus}`);
+    
+    const row = document.querySelector(`tr[data-table="${table}"][data-id="${recordId}"]`);
+    
+    if (!row) {
+        console.warn(`⚠️ Row not found for ${table}/${recordId}`);
+        return false;
+    }
+    
+    // Update status cell
+    const statusCell = row.querySelector('.status-cell');
+    if (statusCell) {
+        statusCell.innerHTML = `<span class="status-badge status-${newStatus}">${newStatus}</span>`;
+        console.log('✅ Status cell updated');
+    }
+    
+    // Update job order cell if provided
+    if (jobOrderId) {
+        const jobOrderCell = row.querySelector('.job-order-cell');
+        if (jobOrderCell) {
+            jobOrderCell.textContent = jobOrderId;
+            console.log('✅ Job order cell updated');
+        }
+    }
+    
+    // Visual feedback: highlight the row
+    row.style.transition = 'background-color 0.5s';
+    row.style.backgroundColor = '#d4edda'; // Light green
+    
+    setTimeout(() => {
+        row.style.backgroundColor = '';
+    }, 2000);
+    
+    console.log(`✅ Table row updated successfully`);
+    return true;
+}
+
+// Add a refresh function to reload complaints without page reload
+async function refreshComplaints() {
+    console.log('🔄 Refreshing complaints...');
+    showNotification('Refreshing complaints...');
+    
+    try {
+        // Get current filter values
+        const status = document.getElementById('status')?.value || 'All Status';
+        const priority = document.getElementById('priority')?.value || 'All Priorities';
+        const type = document.getElementById('type')?.value || 'All Types';
+        const search = document.getElementById('search')?.value || '';
+        const dateFrom = document.getElementById('date_from')?.value || '';
+        const dateTo = document.getElementById('date_to')?.value || '';
+        const timeFrom = document.getElementById('time_from')?.value || '';
+        const timeTo = document.getElementById('time_to')?.value || '';
+        
+        // Build query string
+        const params = new URLSearchParams();
+        if (status !== 'All Status') params.append('status', status);
+        if (priority !== 'All Priorities') params.append('priority', priority);
+        if (type !== 'All Types') params.append('type', type);
+        if (search) params.append('search', search);
+        if (dateFrom) params.append('date_from', dateFrom);
+        if (dateTo) params.append('date_to', dateTo);
+        if (timeFrom) params.append('time_from', timeFrom);
+        if (timeTo) params.append('time_to', timeTo);
+        
+        // Redirect to apply filters
+        window.location.href = `/?${params.toString()}`;
+        
+    } catch (error) {
+        console.error('❌ Error refreshing complaints:', error);
+        showNotification('Failed to refresh complaints', 'error');
+    }
+}
+
+// Add keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Escape key closes modal
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('complaintModal');
+        if (modal && modal.style.display === 'block') {
+            closeModal();
+        }
+    }
+    
+    // Ctrl/Cmd + R to refresh (prevent default and use our refresh)
+    if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+        e.preventDefault();
+        refreshComplaints();
+    }
+});
+
+// Add function to check backend connectivity
+async function checkBackendHealth() {
+    try {
+        const response = await fetch('/api/debug_complaints');
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Backend is healthy and responsive');
+            console.log('📊 Current data:', data.total_counts);
+            return true;
+        } else {
+            console.error('❌ Backend returned error status:', response.status);
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ Cannot connect to backend:', error);
+        showNotification('Warning: Cannot connect to backend server', 'error');
+        return false;
+    }
+}
+
+// Run health check on page load
+window.addEventListener('load', async function() {
+    console.log('🏥 Running backend health check...');
+    const isHealthy = await checkBackendHealth();
+    
+    if (!isHealthy) {
+        console.error('❌ Backend health check failed!');
+        // Show warning banner
+        const alertBar = document.querySelector('.alert-bar');
+        if (alertBar) {
+            alertBar.innerHTML = '⚠️ WARNING: Cannot connect to backend server. Data may not load correctly.';
+            alertBar.style.background = 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)';
+        }
+    }
+});
+
+// Add auto-refresh every 30 seconds (optional)
+let autoRefreshInterval = null;
+
+function enableAutoRefresh(intervalSeconds = 30) {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+    }
+    
+    autoRefreshInterval = setInterval(() => {
+        console.log('🔄 Auto-refreshing dashboard...');
+        loadComplaintsOnMap();
+        updateDashboardStats();
+    }, intervalSeconds * 1000);
+    
+    console.log(`✅ Auto-refresh enabled (every ${intervalSeconds}s)`);
+}
+
+function disableAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+        console.log('⏸️ Auto-refresh disabled');
+    }
+}
+
+// Optional: Enable auto-refresh (uncomment to activate)
+// enableAutoRefresh(30);
+
+console.log('✅ Frontend fixes loaded successfully');
+console.log('📋 Available debug functions:');
+console.log('   - debugComplaints() - Check table status');
+console.log('   - checkBackendHealth() - Test backend connectivity');
+console.log('   - refreshComplaints() - Reload complaint data');
+console.log('   - enableAutoRefresh(seconds) - Enable auto-refresh');
+console.log('   - disableAutoRefresh() - Disable auto-refresh');
+
+// Replace the removeComplaint function in your HTML with this improved version:
+
+async function removeComplaint(table, recordId) {
+    // Confirm deletion
+    if (!confirm("Are you sure you want to remove this complaint? This action cannot be undone.")) {
+        return;
+    }
+
+    console.log(`🗑️ Removing complaint: ${table}/${recordId}`);
+    showNotification('Removing complaint...');
+
+    try {
+        // Make DELETE request
+        const response = await fetch(`/delete_complaint/${encodeURIComponent(table)}/${encodeURIComponent(recordId)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        console.log(`Response status: ${response.status}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Delete response:', data);
+        
+        if (data.success) {
+            // Find and remove the table row
+            const row = document.querySelector(`tr[data-table="${table}"][data-id="${recordId}"]`);
+            
+            if (row) {
+                // Animate removal
+                row.style.transition = 'opacity 0.3s, transform 0.3s';
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(-20px)';
+                
+                setTimeout(() => {
+                    row.remove();
+                    showNotification('✅ Complaint removed successfully!');
+                    
+                    // Check if table is now empty
+                    const tbody = document.querySelector('#complaintsTable tbody');
+                    if (tbody && tbody.querySelectorAll('tr').length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="10" style="text-align: center; padding: 50px; color: #6c757d; font-size: 16px;">
+                                    <div>📭 No complaints found.</div>
+                                    <div style="font-size: 14px; margin-top: 10px;">All complaints have been removed or hidden.</div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                    
+                    // Reload map to remove marker
+                    loadComplaintsOnMap();
+                    
+                    // Update statistics
+                    updateDashboardStats();
+                }, 300);
+            } else {
+                console.warn('Row element not found in DOM');
+                showNotification('✅ Complaint removed! Refreshing page...');
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        } else {
+            showNotification(`❌ Error: ${data.error || 'Unknown error'}`, 'error');
+        }
+    } catch (error) {
+        console.error('❌ Error removing complaint:', error);
+        showNotification(`❌ Error: ${error.message}`, 'error');
+    }
+}
+// Enhanced Professional Rendering Function for Complaint Details Modal
+function renderComplaintDetails(details, container, tableType) {
+    // Clear container
+    container.innerHTML = '';
+    
+    // Define sections with improved organization and color coding
+    const sections = {
+        basic: {
+            title: '👤 Basic Information',
+            icon: '👤',
+            fields: ['Complaint ID', 'Customer Name', 'Email', 'Account Number', 'Contact Information', 'Contact Number'],
+            color: '#007bff'
+        },
+        incident: {
+            title: '⚠️ Incident Details',
+            icon: '⚠️',
+            fields: ['Type of Incident', 'Affected Area', 'Incident Start Time', 'Duration', 'Nearest Landmark'],
+            color: '#ffc107',
+            className: 'incident-details'
+        },
+        general: {
+            title: '📊 General Information',
+            icon: '📊',
+            fields: ['Issue Type', 'Priority', 'Priority Level', 'Source', 'Status', 'Current Status', 'Job Order ID'],
+            color: '#17a2b8'
+        },
+        timing: {
+            title: '🕐 Timing Information',
+            icon: '🕐',
+            fields: ['Date Reported', 'Time Reported', 'Date Submitted', 'Time Submitted'],
+            color: '#28a745'
+        },
+        location: {
+            title: '📍 Location Data',
+            icon: '📍',
+            fields: ['Affected Location', 'Service Address', 'Latitude', 'Longitude', 'GPS Accuracy'],
+            color: '#6f42c1',
+            className: 'location-data'
+        },
+        description: {
+            title: '📝 Detailed Description',
+            icon: '📝',
+            fields: ['Details', 'Concern Details', 'Concern Description', 'Concern'],
+            color: '#fd7e14'
+        }
+    };
+
+    // Process each section
+    for (const [sectionKey, section] of Object.entries(sections)) {
+        const sectionData = {};
+        let hasData = false;
+
+        // Collect data for this section
+        for (const [key, value] of Object.entries(details)) {
+            // Skip section dividers and empty values
+            if (key.includes('---')) continue;
+            
+            // Clean the key for comparison (remove emojis)
+            const cleanKey = key.replace(/🔴|🏘️|⏰|⏱️|📍|👤|⚠️|📊|🕐|📝/g, '').trim();
+            
+            // Check if this field belongs to this section
+            const matchesField = section.fields.some(field => {
+                const cleanField = field.toLowerCase().trim();
+                const cleanKeyLower = cleanKey.toLowerCase().trim();
+                return cleanKeyLower.includes(cleanField) || cleanField.includes(cleanKeyLower);
+            });
+            
+            if (matchesField && value && value !== 'N/A' && value !== 'Not specified' && value !== '' && value !== 'Not recorded') {
+                sectionData[cleanKey] = value;
+                hasData = true;
+            }
+        }
+
+        // Render section if it has data
+        if (hasData) {
+            const sectionDiv = document.createElement('div');
+            sectionDiv.className = `modal-section ${section.className || ''}`;
+            sectionDiv.style.borderLeftColor = section.color;
+            
+            const sectionTitle = document.createElement('h4');
+            sectionTitle.textContent = section.title;
+            sectionTitle.style.color = section.color;
+            sectionDiv.appendChild(sectionTitle);
+
+            // Special handling for description fields
+            if (sectionKey === 'description') {
+                for (const [key, value] of Object.entries(sectionData)) {
+                    const descDiv = document.createElement('div');
+                    descDiv.className = 'detail-description';
+                    descDiv.innerHTML = `
+                        <strong style="color: ${section.color};">${key}:</strong>
+                        <div style="margin-top: 8px; line-height: 1.8;">${value}</div>
+                    `;
+                    sectionDiv.appendChild(descDiv);
+                }
+            } else {
+                // Regular field rendering with improved styling
+                for (const [key, value] of Object.entries(sectionData)) {
+                    const row = document.createElement('div');
+                    row.className = 'detail-row';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'detail-label';
+                    label.textContent = key;
+                    
+                    const valueDiv = document.createElement('div');
+                    valueDiv.className = 'detail-value';
+                    
+                    // Add badges for certain fields with proper styling
+                    if (key.toLowerCase().includes('priority')) {
+                        const priorityClass = value.toLowerCase().replace(/\s+/g, '_');
+                        valueDiv.innerHTML = `<span class="priority-badge priority-${priorityClass}">${value}</span>`;
+                    } else if (key.toLowerCase().includes('status')) {
+                        const statusClass = value.toUpperCase().replace(/\s+/g, '_');
+                        valueDiv.innerHTML = `<span class="status-badge status-${statusClass}">${value}</span>`;
+                    } else {
+                        valueDiv.textContent = value;
+                    }
+                    
+                    row.appendChild(label);
+                    row.appendChild(valueDiv);
+                    sectionDiv.appendChild(row);
+                }
+            }
+
+            container.appendChild(sectionDiv);
+        }
+    }
+
+    // If no sections were rendered, fall back to organized simple list
+    if (container.children.length === 0) {
+        console.warn('⚠️ No sections rendered, using fallback display');
+        
+        const fallbackSection = document.createElement('div');
+        fallbackSection.className = 'modal-section';
+        
+        const fallbackTitle = document.createElement('h4');
+        fallbackTitle.textContent = '📋 All Details';
+        fallbackSection.appendChild(fallbackTitle);
+        
+        for (const [key, value] of Object.entries(details)) {
+            if (!key.includes('---') && value && value !== 'N/A') {
+                const row = document.createElement('div');
+                row.className = 'detail-row';
+                
+                const label = document.createElement('div');
+                label.className = 'detail-label';
+                label.textContent = key;
+                
+                const valueDiv = document.createElement('div');
+                valueDiv.className = 'detail-value';
+                valueDiv.textContent = value;
+                
+                row.appendChild(label);
+                row.appendChild(valueDiv);
+                fallbackSection.appendChild(row);
+            }
+        }
+        
+        container.appendChild(fallbackSection);
+    }
+
+    // If no sections were rendered, fall back to simple list
+    if (container.children.length === 0) {
+        console.warn('⚠️ No sections rendered, using fallback display');
+        for (const [key, value] of Object.entries(details)) {
+            if (key.includes('---')) {
+                const divider = document.createElement('div');
+                divider.style.cssText = 'height: 2px; background: #e9ecef; margin: 15px 0;';
+                container.appendChild(divider);
+            } else {
+                const row = document.createElement('p');
+                row.innerHTML = `<strong>${key}:</strong> ${value || 'N/A'}`;
+                row.style.padding = '8px 0';
+                row.style.borderBottom = '1px solid #eee';
+                container.appendChild(row);
+            }
+        }
+    }
+}
+
+// Keep all other existing functions (attachModalButtonListeners, updateStatus, etc.)
+console.log('✅ Enhanced modal display loaded with incident details support');
+// Add this function to update dashboard statistics after removal
+async function updateDashboardStats() {
+    try {
+        const response = await fetch('/api/dashboard_stats');
+        if (response.ok) {
+            const stats = await response.json();
+            
+            // Update stat cards
+            if (stats.total_active !== undefined) {
+                document.getElementById('statTotalActive').textContent = stats.total_active;
+            }
+            if (stats.in_queue !== undefined) {
+                document.getElementById('statInQueue').textContent = stats.in_queue;
+            }
+            if (stats.resolved_today !== undefined) {
+                document.getElementById('statResolvedToday').textContent = stats.resolved_today;
+            }
+            if (stats.critical_count !== undefined) {
+                document.getElementById('statCritical').textContent = stats.critical_count;
+            }
+        }
+    } catch (error) {
+        console.error('Error updating dashboard stats:', error);
+    }
+}
+
+
+// Enhanced Filter Functions
+
+function setQuickFilter(period) {
+    const today = new Date();
+    const dateFrom = document.getElementById('date_from');
+    const dateTo = document.getElementById('date_to');
+    const timeFrom = document.getElementById('time_from');
+    const timeTo = document.getElementById('time_to');
+    
+    // Remove active class from all buttons
+    document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Add active class to clicked button
+    event.target.classList.add('active');
+    
+    // Helper function to format date as YYYY-MM-DD
+    function formatDate(date) {
+        return date.toISOString().split('T')[0];
+    }
+    
+    // Helper function to get start of week (Sunday)
+    function getStartOfWeek(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day;
+        return new Date(d.setDate(diff));
+    }
+    
+    // Helper function to get end of week (Saturday)
+    function getEndOfWeek(date) {
+        const d = getStartOfWeek(date);
+        d.setDate(d.getDate() + 6);
+        return d;
+    }
+    
+    // Helper function to get start of month
+    function getStartOfMonth(date) {
+        return new Date(date.getFullYear(), date.getMonth(), 1);
+    }
+    
+    // Helper function to get end of month
+    function getEndOfMonth(date) {
+        return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    }
+    
+    switch(period) {
+        case 'today':
+            dateFrom.value = formatDate(today);
+            dateTo.value = formatDate(today);
+            timeFrom.value = '00:00';
+            timeTo.value = '23:59';
+            break;
+            
+        case 'yesterday':
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            dateFrom.value = formatDate(yesterday);
+            dateTo.value = formatDate(yesterday);
+            timeFrom.value = '00:00';
+            timeTo.value = '23:59';
+            break;
+            
+        case 'this_week':
+            const weekStart = getStartOfWeek(today);
+            const weekEnd = getEndOfWeek(today);
+            dateFrom.value = formatDate(weekStart);
+            dateTo.value = formatDate(weekEnd);
+            timeFrom.value = '00:00';
+            timeTo.value = '23:59';
+            break;
+            
+        case 'last_week':
+            const lastWeekStart = getStartOfWeek(new Date(today.setDate(today.getDate() - 7)));
+            const lastWeekEnd = getEndOfWeek(lastWeekStart);
+            dateFrom.value = formatDate(lastWeekStart);
+            dateTo.value = formatDate(lastWeekEnd);
+            timeFrom.value = '00:00';
+            timeTo.value = '23:59';
+            break;
+            
+        case 'this_month':
+            const monthStart = getStartOfMonth(today);
+            const monthEnd = getEndOfMonth(today);
+            dateFrom.value = formatDate(monthStart);
+            dateTo.value = formatDate(monthEnd);
+            timeFrom.value = '00:00';
+            timeTo.value = '23:59';
+            break;
+            
+        case 'last_7_days':
+            const sevenDaysAgo = new Date(today);
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            dateFrom.value = formatDate(sevenDaysAgo);
+            dateTo.value = formatDate(new Date());
+            timeFrom.value = '00:00';
+            timeTo.value = '23:59';
+            break;
+            
+        case 'last_30_days':
+            const thirtyDaysAgo = new Date(today);
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            dateFrom.value = formatDate(thirtyDaysAgo);
+            dateTo.value = formatDate(new Date());
+            timeFrom.value = '00:00';
+            timeTo.value = '23:59';
+            break;
+    }
+    
+    // Update active filters display
+    updateActiveFiltersDisplay();
+    
+    // Auto-submit the form
+    document.getElementById('filterForm').submit();
+}
+
+
+function clearDateFilters() {
+    document.getElementById('date_from').value = '';
+    document.getElementById('date_to').value = '';
+    document.getElementById('time_from').value = '';
+    document.getElementById('time_to').value = '';
+    
+    // Remove active class from quick filter buttons
+    document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    updateActiveFiltersDisplay();
+}
+
+function clearAllFilters() {
+    document.getElementById('search').value = '';
+    document.getElementById('status').value = 'All Status';
+    document.getElementById('priority').value = 'All Priorities';
+    document.getElementById('type').value = 'All Types';
+    clearDateFilters();
+    
+    // Clear active filters
+    currentFilters = {
+        search: '',
+        status: 'All Status',
+        priority: 'All Priorities',
+        type: 'All Types',
+        date_from: '',
+        date_to: '',
+        time_from: '',
+        time_to: ''
+    };
+    
+    updateActiveFiltersDisplay();
+    window.location.href = window.location.pathname;
+}
+
+function updateActiveFiltersDisplay() {
+    const activeFiltersDiv = document.getElementById('activeFilters');
+    const filters = [];
+    
+    // Check search
+    const search = document.getElementById('search').value;
+    if (search) {
+        filters.push({
+            label: `Search: ${search}`,
+            field: 'search'
+        });
+    }
+    
+    // Check status
+    const status = document.getElementById('status').value;
+    if (status && status !== 'All Status') {
+        filters.push({
+            label: `Status: ${status}`,
+            field: 'status'
+        });
+    }
+    
+    // Check priority
+    const priority = document.getElementById('priority').value;
+    if (priority && priority !== 'All Priorities') {
+        filters.push({
+            label: `Priority: ${priority}`,
+            field: 'priority'
+        });
+    }
+    
+    // Check type
+    const type = document.getElementById('type').value;
+    if (type && type !== 'All Types') {
+        filters.push({
+            label: `Type: ${type}`,
+            field: 'type'
+        });
+    }
+    
+    // Check date range
+    const dateFrom = document.getElementById('date_from').value;
+    const dateTo = document.getElementById('date_to').value;
+    if (dateFrom || dateTo) {
+        const dateLabel = dateFrom && dateTo 
+            ? `${dateFrom} to ${dateTo}` 
+            : dateFrom 
+                ? `From ${dateFrom}` 
+                : `Until ${dateTo}`;
+        filters.push({
+            label: `📅 ${dateLabel}`,
+            field: 'date'
+        });
+    }
+    
+    // Check time range
+    const timeFrom = document.getElementById('time_from').value;
+    const timeTo = document.getElementById('time_to').value;
+    if (timeFrom || timeTo) {
+        const timeLabel = timeFrom && timeTo 
+            ? `${timeFrom} to ${timeTo}` 
+            : timeFrom 
+                ? `From ${timeFrom}` 
+                : `Until ${timeTo}`;
+        filters.push({
+            label: `🕐 ${timeLabel}`,
+            field: 'time'
+        });
+    }
+    
+    // Display active filters
+    if (filters.length > 0) {
+        activeFiltersDiv.style.display = 'flex';
+        activeFiltersDiv.innerHTML = `
+            <strong style="font-size: 12px; color: #495057; margin-right: 10px;">Active Filters:</strong>
+            ${filters.map(f => `
+                <span class="filter-tag">
+                    ${f.label}
+                    <span class="remove" onclick="removeFilter('${f.field}')">&times;</span>
+                </span>
+            `).join('')}
+        `;
+    } else {
+        activeFiltersDiv.style.display = 'none';
+    }
+}
+
+function removeFilter(field) {
+    switch(field) {
+        case 'search':
+            document.getElementById('search').value = '';
+            break;
+        case 'status':
+            document.getElementById('status').value = 'All Status';
+            break;
+        case 'priority':
+            document.getElementById('priority').value = 'All Priorities';
+            break;
+        case 'type':
+            document.getElementById('type').value = 'All Types';
+            break;
+        case 'date':
+            document.getElementById('date_from').value = '';
+            document.getElementById('date_to').value = '';
+            break;
+        case 'time':
+            document.getElementById('time_from').value = '';
+            document.getElementById('time_to').value = '';
+            break;
+    }
+    updateActiveFiltersDisplay();
+    document.getElementById('filterForm').submit();
+}
+
+// Initialize active filters display on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateActiveFiltersDisplay();
+    
+    // Add change listeners to all filter inputs
+    ['search', 'status', 'priority', 'type', 'date_from', 'date_to', 'time_from', 'time_to'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', updateActiveFiltersDisplay);
+        }
+    });
+});
+
+function showUpdateIndicator() {
+    const indicator = document.getElementById('updateIndicator');
+    indicator.classList.add('show');
+    setTimeout(() => indicator.classList.remove('show'), 2000);
+}
+
+function showNotification(message, type = 'success') {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.className = 'notification';
+    if (type === 'error') {
+        notification.classList.add('error');
+    }
+    notification.classList.add('show');
+    
+    setTimeout(() => notification.classList.remove('show'), 4000);
+}
+
+function initializeChart() {
+    const ctx = document.getElementById('complaintChart');
+    if (!ctx) return;
+
+    try {
+        const powerOutageCount = parseInt('{{ power_outage_count if power_outage_count is defined else 0 }}') || 0;
+        const billingCount = parseInt('{{ billing_count if billing_count is defined else 0 }}') || 0;
+        const technicalCount = parseInt('{{ technical_count if technical_count is defined else 0 }}') || 0;
+        const serviceCount = parseInt('{{ service_count if service_count is defined else 0 }}') || 0;
+        
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['⚡ Power Outage', '💳 Billing', '🔧 Technical', '📞 Service'],
+                datasets: [{
+                    data: [powerOutageCount, billingCount, technicalCount, serviceCount],
+                    backgroundColor: [
+                        '#dc3545',
+                        '#ffc107',
+                        '#17a2b8',
+                        '#28a745'
+                    ],
+                    borderWidth: 3,
+                    borderColor: '#fff',
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 12,
+                            usePointStyle: true,
+                            font: { 
+                                size: 11,
+                                weight: '600'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        padding: 12,
+                        titleFont: {
+                            size: 13,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 12
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Chart initialization error:', error);
+        showNotification('Failed to initialize analytics chart', 'error');
+    }
+}
+// ✅ Test function to verify button functionality
+function testModalButtons() {
+    console.log('🧪 Testing modal buttons...');
+    
+    const assignBtn = document.getElementById('assignJobOrder');
+    const inProgressBtn = document.getElementById('updateStatusInProgress');
+    const resolvedBtn = document.getElementById('updateStatusResolved');
+    
+    console.log('Assign button exists:', !!assignBtn);
+    console.log('In Progress button exists:', !!inProgressBtn);
+    console.log('Resolved button exists:', !!resolvedBtn);
+    
+    if (currentComplaintData) {
+        console.log('Current complaint data:', currentComplaintData);
+    } else {
+        console.warn('No current complaint data set!');
+    }
+    
+    // Test if onclick handlers are attached
+    console.log('Assign onclick:', assignBtn?.onclick);
+    console.log('In Progress onclick:', inProgressBtn?.onclick);
+    console.log('Resolved onclick:', resolvedBtn?.onclick);
+}
+
+console.log('✅ Complete updateStatus function loaded');
+console.log('📋 Debug command: testModalButtons() - Run this after opening a complaint modal');
+// Add these functions to your dashboard JavaScript
+
+// Search for nearby complaints using PostGIS
+async function searchNearbyComplaints(lat, lng, radius = 1000) {
+    try {
+        showNotification('Searching for nearby complaints...');
+        
+        const response = await fetch('/api/complaints_nearby', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lat: lat,
+                lng: lng,
+                radius: radius  // meters
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log(`Found ${data.count} complaints within ${radius}m`);
+            
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            
+            // Add search center marker
+            const centerMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div style='background-color:#4285f4;width:30px;height:30px;border-radius:50%;border:4px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:16px;'>📍</div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                })
+            }).addTo(map)
+                .bindPopup(`<strong>Search Center</strong><br>Radius: ${radius}m`);
+            
+            markers.push(centerMarker);
+            
+            // Add search radius circle
+            const radiusCircle = L.circle([lat, lng], {
+                radius: radius,
+                color: '#4285f4',
+                fillColor: '#4285f4',
+                fillOpacity: 0.1,
+                weight: 2,
+                dashArray: '5, 10'
+            }).addTo(map);
+            
+            markers.push(radiusCircle);
+            
+            // Add complaint markers with distance
+            data.complaints.forEach(complaint => {
+                const color = getMarkerColor(complaint.priority, complaint.status);
+                
+                const marker = L.circleMarker([complaint.lat, complaint.lng], {
+                    radius: 12,
+                    fillColor: color,
+                    color: '#fff',
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).addTo(map);
+                
+                const popupContent = `
+                    <div class="location-popup">
+                        <h4>${complaint.customer || 'Unknown'}</h4>
+                        <p><strong>📍 Address:</strong> ${complaint.address || 'N/A'}</p>
+                        <p><strong>📏 Distance:</strong> ${complaint.distance_meters}m (${complaint.distance_km}km)</p>
+                        <p><strong>⚡ Type:</strong> ${complaint.type}</p>
+                        <p><strong>🎯 Priority:</strong> ${complaint.priority}</p>
+                        <p><strong>📋 Status:</strong> <span class="popup-status ${complaint.status}">${complaint.status}</span></p>
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                markers.push(marker);
+            });
+            
+            // Fit map to show all markers
+            if (markers.length > 0) {
+                const group = new L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.2));
+            }
+            
+            showNotification(`Found ${data.count} complaints nearby`);
+            
+            // Display results in a modal or sidebar
+            displayNearbyResults(data.complaints);
+            
+        } else {
+            showNotification(data.error || 'Search failed', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error searching nearby complaints:', error);
+        showNotification('Failed to search nearby complaints: ' + error.message, 'error');
+    }
+}
+
+// Display nearby results in a table
+function displayNearbyResults(complaints) {
+    if (complaints.length === 0) {
+        showNotification('No complaints found in this area');
+        return;
+    }
+    
+    // Sort by distance
+    complaints.sort((a, b) => a.distance_meters - b.distance_meters);
+    
+    // Create results HTML
+    let html = `
+        <div style="max-height: 400px; overflow-y: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="position: sticky; top: 0; background: #f8f9fa;">
+                    <tr>
+                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Customer</th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Distance</th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Priority</th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    complaints.forEach(complaint => {
+        html += `
+            <tr style="border-bottom: 1px solid #e9ecef;">
+                <td style="padding: 10px;">
+                    <strong>${complaint.customer}</strong><br>
+                    <small>${complaint.address}</small>
+                </td>
+                <td style="padding: 10px;">
+                    ${complaint.distance_meters}m<br>
+                    <small>(${complaint.distance_km}km)</small>
+                </td>
+                <td style="padding: 10px;">
+                    <span class="priority-badge priority-${complaint.priority.toLowerCase()}">
+                        ${complaint.priority}
+                    </span>
+                </td>
+                <td style="padding: 10px;">
+                    <span class="status-badge status-${complaint.status}">
+                        ${complaint.status}
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    // Show in modal
+    const modalBody = document.getElementById('complaintModalBody');
+    const modalTitle = document.getElementById('complaintModalLabel');
+    
+    if (modalBody && modalTitle) {
+        modalTitle.textContent = `Nearby Complaints (${complaints.length} found)`;
+        modalBody.innerHTML = html;
+        document.getElementById('complaintModalFooter').style.display = 'none';
+        openModal();
+    }
+}
+
+// Add "Search Nearby" button to map controls
+function addNearbySearchButton() {
+    const mapControls = document.querySelector('.map-controls');
+    if (mapControls) {
+        const nearbyBtn = document.createElement('button');
+        nearbyBtn.textContent = '🔍 Search Nearby (1km)';
+        nearbyBtn.style.cssText = `
+            padding: 10px 20px;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        `;
+        
+        nearbyBtn.addEventListener('click', function() {
+            // Use map center for search
+            const center = map.getCenter();
+            searchNearbyComplaints(center.lat, center.lng, 1000);
+        });
+        
+        nearbyBtn.addEventListener('mouseenter', function() {
+            this.style.background = '#138496';
+            this.style.transform = 'translateY(-1px)';
+            this.style.boxShadow = '0 4px 8px rgba(23,162,184,0.3)';
+        });
+        
+        nearbyBtn.addEventListener('mouseleave', function() {
+            this.style.background = '#17a2b8';
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+        });
+        
+        mapControls.appendChild(nearbyBtn);
+    }
+}
+
+// Add radius selector
+function addRadiusSelector() {
+    const mapControls = document.querySelector('.map-controls');
+    if (mapControls) {
+        const radiusSelect = document.createElement('select');
+        radiusSelect.id = 'searchRadius';
+        radiusSelect.style.cssText = `
+            padding: 10px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        `;
+        
+        radiusSelect.innerHTML = `
+            <option value="500">500m radius</option>
+            <option value="1000" selected>1km radius</option>
+            <option value="2000">2km radius</option>
+            <option value="5000">5km radius</option>
+            <option value="10000">10km radius</option>
+        `;
+        
+        mapControls.appendChild(radiusSelect);
+    }
+}
+
+// Enhanced search with radius
+function searchNearbyWithRadius() {
+    const center = map.getCenter();
+    const radius = parseInt(document.getElementById('searchRadius')?.value || 1000);
+    searchNearbyComplaints(center.lat, center.lng, radius);
+}
+
+// Add context menu to map for quick nearby search
+function addMapContextMenu() {
+    map.on('contextmenu', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        
+        if (confirm(`Search for complaints near this location?\n\nLat: ${lat.toFixed(6)}\nLng: ${lng.toFixed(6)}`)) {
+            searchNearbyComplaints(lat, lng, 1000);
+        }
+    });
+}
+
+// Initialize PostGIS features when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🗺️  Initializing PostGIS features...');
+    
+    // Wait for map to be ready
+    if (typeof map !== 'undefined') {
+        addNearbySearchButton();
+        addRadiusSelector();
+        addMapContextMenu();
+        console.log('✅ PostGIS features initialized');
+    } else {
+        console.warn('Map not found, PostGIS features not initialized');
+    }
+});
+
+// Export for use in other scripts
+window.searchNearbyComplaints = searchNearbyComplaints;
+window.displayNearbyResults = displayNearbyResults;
+
+javascript
+// ============================================
+//  AUTO-REFRESH EVERY 10 SECONDS
+// ============================================
+
+let refreshCountdown = 10; // seconds
+let refreshInterval = null;
+let countdownInterval = null;
+
+// Create refresh indicator
+function createRefreshIndicator() {
+    const indicator = document.createElement('div');
+    indicator.id = 'refreshIndicator';
+    indicator.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s;
+    `;
+    
+    indicator.innerHTML = `
+        <div style="width: 10px; height: 10px; background: white; border-radius: 50%; animation: pulse 1.5s infinite;"></div>
+        <span>Auto-refresh in <strong id="countdown">10</strong>s</span>
+        <button onclick="pauseAutoRefresh()" style="
+            background: rgba(255,255,255,0.2);
+            border: 1px solid white;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 10px;
+        ">⏸ Pause</button>
+    `;
+    
+    document.body.appendChild(indicator);
+}
+
+// Update countdown display
+function updateCountdown() {
+    const countdownEl = document.getElementById('countdown');
+    if (countdownEl) {
+        countdownEl.textContent = refreshCountdown;
+    }
+    
+    // Change color as time runs out
+    const indicator = document.getElementById('refreshIndicator');
+    if (indicator) {
+        if (refreshCountdown <= 3) {
+            indicator.style.background = 'linear-gradient(135deg, #ffc107 0%, #ff9800 100%)';
+        }
+    }
+}
+
+// Start auto-refresh
+function startAutoRefresh() {
+    console.log('🔄 Auto-refresh enabled (every 10 seconds)');
+    
+    // Create indicator
+    if (!document.getElementById('refreshIndicator')) {
+        createRefreshIndicator();
+    }
+    
+    // Main refresh interval
+    refreshInterval = setInterval(() => {
+        console.log('⏰ Auto-refreshing dashboard...');
+        showNotification('🔄 Refreshing dashboard...', 'success');
+        
+        // Reload complaints data without full page reload
+        loadComplaintsOnMap();
+        updateDashboardStats();
+        
+        // Reset countdown
+        refreshCountdown = 10;
+        updateCountdown();
+        
+        // Show refresh animation
+        const indicator = document.getElementById('refreshIndicator');
+        if (indicator) {
+            indicator.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                indicator.style.transform = 'scale(1)';
+            }, 300);
+        }
+    }, 10000); // 10 seconds
+    
+    // Countdown interval
+    countdownInterval = setInterval(() => {
+        refreshCountdown--;
+        updateCountdown();
+        
+        if (refreshCountdown <= 0) {
+            refreshCountdown = 10;
+        }
+    }, 1000);
+}
+
+// Add at the end of your script section
+function testViewButtons() {
+    console.log('🧪 Testing view buttons...');
+    const buttons = document.querySelectorAll('.view-complaint');
+    console.log(`Found ${buttons.length} view buttons`);
+    
+    buttons.forEach((btn, index) => {
+        const table = btn.getAttribute('data-table');
+        const id = btn.getAttribute('data-id');
+        console.log(`Button ${index + 1}: table=${table}, id=${id}`);
+    });
+    
+    if (buttons.length === 0) {
+        console.error('❌ No view buttons found! Check if complaints are loading.');
+    }
+}
+
+// Run test after page loads
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(testViewButtons, 1000);
+});
+
+
+// Pause auto-refresh
+function pauseAutoRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+        clearInterval(countdownInterval);
+        refreshInterval = null;
+        countdownInterval = null;
+        
+        const indicator = document.getElementById('refreshIndicator');
+        if (indicator) {
+            indicator.innerHTML = `
+                <div style="width: 10px; height: 10px; background: white; border-radius: 50%;"></div>
+                <span>Auto-refresh paused</span>
+                <button onclick="startAutoRefresh()" style="
+                    background: rgba(255,255,255,0.2);
+                    border: 1px solid white;
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 11px;
+                    font-weight: 600;
+                    margin-left: 10px;
+                ">▶ Resume</button>
+            `;
+            indicator.style.background = 'linear-gradient(135deg, #6c757d 0%, #495057 100%)';
+        }
+        
+        console.log('⏸ Auto-refresh paused');
+        showNotification('⏸ Auto-refresh paused', 'success');
+    }
+}
+
+// Start on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait 2 seconds before starting auto-refresh
+    setTimeout(() => {
+        startAutoRefresh();
+    }, 2000);
+});
+
+console.log('✅ Auto-refresh script loaded');
+
+</script>
+
+</body>
+</html>

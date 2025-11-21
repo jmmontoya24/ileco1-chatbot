@@ -1,0 +1,156 @@
+version: "3.1"
+
+nlu:
+- intent: greet
+  examples: |
+    - hi
+    - hello
+    - hey there
+    - good morning
+    - good noon
+    - good evening
+    - maayong aga
+    - maayong hapon
+    - maayong gabe
+    - 12345
+    - 0000
+    - 912387
+    - ajdhakjdha
+    - klsdjfkl
+    - what???
+    - !@#$$%^^
+    - 😤😤😤
+    - abcdefghijklmnopqqrstuvwxyz
+    - ma
+    - menu
+  
+- intent: out_of_scope
+  examples: |
+    - 112345
+    - 10000
+    - 1912387
+    - 1ajdhakjdha
+    - 1klsdjfkl
+    - 1what???
+    - 1!@#$$%^^
+    - 1😤😤😤
+
+
+- intent: accept_terms
+  examples: |
+    - I agree
+    - i agree
+    - I Agree
+    - I AGREE
+    - Yes, I agree
+    - accept
+    - I accept the terms
+
+
+- intent: report_power_outage
+  examples: |
+    - there's no electricity
+    - report power interruption
+    - report a blackout
+    - we have no power
+    - brownout
+    - permi lng brownout d haw
+
+- intent: follow_up_report
+  examples: |
+    - Follow-Up Report
+    - My job order ID is [JO-206760715-3830](fr_job_order_id)
+    - It’s [JO-206760715-3830](fr_job_order_id)
+    - The job order number is [JO-206760715-3830](fr_job_order_id)
+    - Please check [JO-206760715-3830](fr_job_order_id)
+    - Here's the job order: [JO-206760715-3830](fr_job_order_id)
+    - The ID is [JO-206760715-3830](fr_job_order_id)
+    - I want to follow up on [JO-206760715-3830](fr_job_order_id)
+    - Follow up on this job order: [JO-206760715-3830](fr_job_order_id)
+    - The reference is [JO-206760715-3830](fr_job_order_id)
+    - [JO-206760715-3830](fr_job_order_id)
+
+- intent: schedule_outage
+  examples: |
+    - What is the schedule of power interruption?
+    - Show power outage update
+    - Is there any scheduled blackout?
+    - I want to know the interruption schedule
+    - Schedule Power Interruption
+    - may scheduled power interruption
+
+
+- intent: online_billing
+  examples: |
+    - I want to register for online-billing
+    - How can I sign up for online bills?
+    - Register for online billing
+    - I want to receive my bills via email
+    - Where can I register for online-bill?
+    - Registration for Online Bills
+    - Online Billing
+
+
+- intent: payment_option
+  examples: |
+    - Tell me about payment options
+    - Payment Option
+
+- intent: requirements_checklist
+  examples: |
+    - Requirements 
+    - ano ang requirements
+
+
+- intent: schedule_pmos
+  examples: |
+    - may scheudles sang pmos
+    - Schedule of Pmos
+
+- intent: download_forms
+  examples: |
+    - Download Application Forms
+    - diin pde ka download forms
+
+- intent: meter_concern
+  examples: |
+    - Meter Concern
+    - Meter Concerns
+    - may concern lng ko tni sa metro ko 
+
+- intent: transfer_of_meter
+  examples: |
+    - Transfer of Meter
+    - paano ka transfer sang metro
+
+- intent: contact_information
+  examples: |
+    - Contact Information
+    - may contact number ka da?
+
+- intent: rates
+  examples: |
+    - ano ang rate subong?
+    - Rates
+
+- intent: office_location
+  examples: |
+    - Office Location
+    - diin ang office location?
+
+- intent: energy_saving_tips
+  examples: |
+    - Energy Saving Tips
+    - paano maka tipid sang kuryente
+
+- regex: fr_job_order_id
+  examples: |
+    - JO-\d{9}-\d{4}
+
+- intent: talk_to_agent
+  examples: |
+    - I want to talk to an agent
+    - Can I speak with someone?
+    - Need to talk to customer service
+    - Connect me to a live agent
+    - Connect to Available Agent

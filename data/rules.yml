@@ -1,0 +1,149 @@
+version: "3.1"
+
+rules:
+
+- rule: Show greeting on first message if not agreed
+  condition:
+    - slot_was_set:
+        - terms_agreed: false
+  steps:
+  - intent: greet
+  - action: utter_greet
+
+- rule: Fallback rule
+  steps:
+    - intent: nlu_fallback
+    - action: action_default_fallback
+
+- rule: User Agree to the terms of use and privacy Policy.
+  steps:
+  - intent: accept_terms
+  - action: utter_agree
+  - action: action_show_carousel
+
+- rule: Start power outage report form
+  steps:
+  - intent: report_power_outage
+  - action: power_outage_form
+  - active_loop: power_outage_form
+
+- rule: Submit power outage report
+  condition:
+  - active_loop: power_outage_form
+  steps:
+  - action: power_outage_form
+  - active_loop: null
+  - action: action_submit_power_outage_form
+  - action: action_show_carousel_extra
+
+
+- rule: respond to schedule outage
+  steps:
+  - intent: schedule_outage
+  - action: utter_schedule_power_outage
+  - action: action_show_carousel_extra
+
+- rule: registration for online billing
+  steps:
+  - intent: online_billing
+  - action: utter_billing_registration
+  - action: utter_billing_registration1
+  - action: action_show_carousel_extra
+
+- rule: options for payment
+  steps:
+  - intent: payment_option
+  - action: utter_payment_option
+  - action: action_show_carousel_extra
+
+- rule: inquire for requirements_checklist
+  steps:
+    - intent: requirements_checklist
+    - action: utter_requirements_checklist
+    - action: utter_requirements_checklist_2
+    - action: action_show_carousel_extra
+
+- rule: inquire for pmos
+  steps:
+    - intent: schedule_pmos
+    - action: utter_pmos_schedule
+    - action: action_show_carousel_extra
+
+- rule: download application forms
+  steps:
+    - intent: download_forms
+    - action: utter_downloadable_forms
+    - action: action_show_carousel_extra
+
+- rule: start  meter concerns form
+  steps:
+    - intent: meter_concern
+    - action: meter_concern_form
+    - active_loop: meter_concern_form
+
+- rule: Submit Meter Concern Form
+  condition:
+    - active_loop: meter_concern_form
+  steps:
+    - action: meter_concern_form
+    - active_loop: null
+    - action: action_submit_meter_concern
+    - action: action_show_carousel_extra
+
+- rule: Transfer of meter
+  steps:
+    - intent: transfer_of_meter
+    - action: utter_transfer_of_meter
+    - action: utter_transfer_of_meter2
+    - action: utter_transfer_of_meter3
+    - action: utter_transfer_of_meter4
+    - action: action_show_carousel_extra
+
+-  rule: respond to out of scope
+   steps:
+    - intent: out_of_scope
+    - action: utter_greet
+
+- rule: energy saving tips
+  steps:
+    - intent: energy_saving_tips
+    - action: utter_energy_saving_tips
+    - action: action_show_carousel_extra
+
+- rule: start Follow Report Form
+  steps:
+    - intent: follow_up_report
+    - action: follow_up_report_form
+    - active_loop: follow_up_report_form
+
+- rule: Submit Follow Up Report Form
+  condition:
+    - active_loop: follow_up_report_form
+  steps:
+    - action: follow_up_report_form
+    - active_loop: null
+    - action: action_submit_follow_up_report_form
+    - action: action_show_carousel_extra
+
+
+- rule: Resume conversation
+  steps:
+    - action: action_resume_conversation
+    - action: action_show_carousel_extra
+
+- rule: Activate talk to agent form
+  steps:
+    - intent: talk_to_agent
+    - action: talk_to_agent_form
+    - active_loop: talk_to_agent_form
+
+- rule: Submit talk to agent form and pause bot
+  condition:
+    - active_loop: talk_to_agent_form
+  steps:
+    - action: talk_to_agent_form
+    - active_loop: null
+    - action: action_submit_talk_to_agent_form
+    - action: action_serve_next_user
+    
+

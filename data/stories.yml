@@ -1,0 +1,78 @@
+version: "3.1"
+
+stories:
+- story: User starts conversation
+  steps:
+  - intent: greet
+  - action: utter_greet
+
+- story: online billing
+  steps:
+    - intent: online_billing
+    - action: utter_billing_registration
+    - action: utter_billing_registration1
+    - action: action_show_carousel_extra
+
+
+- story: payment_option
+  steps:
+    - intent: payment_option
+    - action: utter_payment_option
+    - action: action_show_carousel_extra
+
+- story: inquire for requirements_checklist
+  steps:
+    - intent: requirements_checklist
+    - action: utter_requirements_checklist
+    - action: utter_requirements_checklist_2
+    - action: action_show_carousel_extra
+
+- story: inquire for pmos
+  steps:
+    - intent: schedule_pmos
+    - action: utter_pmos_schedule
+    - action: action_show_carousel_extra
+
+- story: download application forms
+  steps:
+    - intent: download_forms
+    - action: utter_downloadable_forms
+    - action: action_show_carousel_extra
+
+- story: Transfer of meter
+  steps:
+    - intent: transfer_of_meter
+    - action: utter_transfer_of_meter
+    - action: utter_transfer_of_meter2
+    - action: utter_transfer_of_meter3
+    - action: utter_transfer_of_meter4
+    - action: action_show_carousel_extra
+
+- story: contact information
+  steps:
+    - intent: contact_information
+    - action: utter_contact_information
+    - action: utter_contact_information1
+    - action: action_show_carousel_extra
+
+- story: rates
+  steps:
+    - intent: rates
+    - action: utter_rates
+    - action: action_show_carousel_extra
+
+- story: office location
+  steps:
+    - intent: office_location
+    - action: utter_office_location
+    - action: action_show_carousel_extra
+
+- story: energy saving tips
+  steps:
+    - intent: energy_saving_tips
+    - action: utter_energy_saving_tips
+    - action: action_show_carousel_extra
+
+
+
+

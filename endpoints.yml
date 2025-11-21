@@ -1,0 +1,12 @@
+action_endpoint:
+  url: "${ACTION_ENDPOINT_URL}/webhook"
+
+# Commented out for initial deployment
+# tracker_store:
+#   type: SQL
+#   dialect: "postgresql"
+#   url: "${DB_HOST}"
+#   db: "${DB_NAME}"
+#   username: "${DB_USER}"
+#   password: "${DB_PASSWORD}"
+#   port: 5432

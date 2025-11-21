@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ILECO-1 Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #003366 0%, #004d99 50%, #0066cc 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .electric-bolt {
+            position: absolute;
+            background: rgba(255, 215, 0, 0.1);
+            animation: float 20s infinite;
+            border-radius: 50%;
+        }
+
+        .bolt-1 { width: 150px; height: 150px; top: 10%; left: 10%; animation-delay: 0s; }
+        .bolt-2 { width: 100px; height: 100px; top: 70%; right: 10%; animation-delay: 5s; }
+        .bolt-3 { width: 120px; height: 120px; bottom: 20%; left: 15%; animation-delay: 10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.3; }
+            25% { transform: translateY(-30px) translateX(20px) scale(1.1); opacity: 0.5; }
+            50% { transform: translateY(-50px) translateX(-20px) scale(0.9); opacity: 0.4; }
+            75% { transform: translateY(-20px) translateX(30px) scale(1.05); opacity: 0.6; }
+        }
+
+        /* Login Container */
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 420px;
+            max-width: 90%;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header */
+        .login-header {
+            background: linear-gradient(135deg, #003366 0%, #004d99 100%);
+            padding: 50px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .logo {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: logoGlow 2s infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes logoGlow {
+            0%, 100% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 20px rgba(255, 215, 0, 0.3); }
+            50% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 40px rgba(255, 215, 0, 0.6); }
+        }
+
+        .logo-text {
+            font-size: 56px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #003366 0%, #0066cc 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .system-title {
+            color: white;
+            font-size: 26px;
+            font-weight: 700;
+            margin: 10px 0 5px 0;
+            position: relative;
+            z-index: 1;
+            letter-spacing: 0.5px;
+        }
+
+        .system-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Form Section */
+        .login-form {
+            padding: 45px 35px;
+        }
+
+        .welcome-text {
+            text-align: center;
+            color: #495057;
+            font-size: 18px;
+            margin-bottom: 35px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-size: 22px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 16px 18px 16px 55px;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 5px;
+            transition: color 0.3s;
+        }
+
+        .password-toggle:hover {
+            color: #003366;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #003366 0%, #0066cc 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            box-shadow: 0 4px 15px rgba(0, 51, 102, 0.3);
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            background: linear-gradient(135deg, #002244 0%, #004d99 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 51, 102, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            animation: slideDown 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        .login-footer {
+            text-align: center;
+            padding: 25px;
+            background: #f8f9fa;
+            color: #6c757d;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* Shake animation for errors */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-container {
+                width: 95%;
+                border-radius: 15px;
+            }
+            .login-header {
+                padding: 40px 25px;
+            }
+            .logo {
+                width: 90px;
+                height: 90px;
+            }
+            .logo-text {
+                font-size: 48px;
+            }
+            .system-title {
+                font-size: 22px;
+            }
+            .login-form {
+                padding: 35px 25px;
+            }
+            .welcome-text {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="electric-bolt bolt-1"></div>
+        <div class="electric-bolt bolt-2"></div>
+        <div class="electric-bolt bolt-3"></div>
+    </div>
+
+    <!-- Login Container -->
+    <div class="login-container">
+        <!-- Header Section -->
+        <div class="login-header">
+            <div class="logo">
+                <div class="logo-text">⚡</div>
+            </div>
+            <h1 class="system-title">ILECO-1 </h1>
+            <p class="system-subtitle">Complaint Management System</p>
+        </div>
+
+        <!-- Form Section -->
+        <div class="login-form">
+
+            <!-- Alert Message -->
+            <div id="alertMessage" style="display: none;"></div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <!-- Username Field -->
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            class="form-control" 
+                            placeholder="Enter your username"
+                            required
+                            autocomplete="username"
+                            autofocus
+                        >
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔒</span>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="form-control" 
+                            placeholder="Enter your password"
+                            required
+                            autocomplete="current-password"
+                        >
+                        <button 
+                            type="button" 
+                            class="password-toggle" 
+                            onclick="togglePassword()"
+                            id="passwordToggle"
+                            title="Show/Hide Password"
+                        >
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Login Button -->
+                <button type="submit" class="btn-login" id="loginButton">
+                    Login
+                </button>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="login-footer">
+            <p>© 2024 ILECO-1 | Secure Access Portal</p>
+        </div>
+    </div>
+
+    <script>
+        // Password Toggle
+        let passwordVisible = false;
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleButton = document.getElementById('passwordToggle');
+            
+            passwordVisible = !passwordVisible;
+            
+            if (passwordVisible) {
+                passwordInput.type = 'text';
+                toggleButton.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleButton.textContent = '👁️';
+            }
+        }
+
+        // Show Alert Message
+        function showAlert(message, type = 'error') {
+            const alertDiv = document.getElementById('alertMessage');
+            const icon = type === 'success' ? '✅' : '❌';
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `<span style="font-size: 18px;">${icon}</span><span>${message}</span>`;
+            alertDiv.style.display = 'flex';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Form Submission
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const loginButton = document.getElementById('loginButton');
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            
+            // Validation
+            if (!username || !password) {
+                showAlert('Please enter both username and password', 'error');
+                return;
+            }
+            
+            // Disable button and show loading
+            loginButton.disabled = true;
+            loginButton.innerHTML = '<span class="spinner"></span>Logging in...';
+            
+            try {
+                // Send login request
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Login successful! Redirecting...', 'success');
+                    
+                    // Add success animation
+                    document.querySelector('.login-container').style.transform = 'scale(0.95)';
+                    document.querySelector('.login-container').style.opacity = '0.8';
+                    document.querySelector('.login-container').style.transition = 'all 0.5s ease';
+                    
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '/';
+                    }, 1000);
+                } else {
+                    showAlert(data.error || 'Invalid username or password', 'error');
+                    loginButton.disabled = false;
+                    loginButton.innerHTML = 'Login';
+                    
+                    // Shake animation on error
+                    document.querySelector('.login-container').style.animation = 'shake 0.5s';
+                    setTimeout(() => {
+                        document.querySelector('.login-container').style.animation = 'slideIn 0.6s ease-out';
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showAlert('Connection error. Please try again.', 'error');
+                loginButton.disabled = false;
+                loginButton.innerHTML = 'Login';
+            }
+        }
+
+        // Enter key on username field focuses password
+        document.getElementById('username').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('password').focus();
+            }
+        });
+
+        // Clear any existing session storage
+        sessionStorage.clear();
+
+        console.log('🔐 ILECO-1 Login System Ready');
+        console.log('📋 Default Credentials:');
+        console.log('   Username: admin');
+        console.log('   Password: admin123');
+    </script>
+</body>
+</html>
