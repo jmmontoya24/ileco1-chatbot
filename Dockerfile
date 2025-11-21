@@ -14,11 +14,11 @@ RUN rasa train --fixed-model-name current
 # Expose port
 EXPOSE 5005
 
-# Run Rasa server using PORT environment variable
+# Run Rasa server - use shell form to allow environment variable expansion
 CMD rasa run \
     --enable-api \
     --cors "*" \
-    --port ${PORT:-5005} \
+    --port $PORT \
     --credentials credentials.yml \
     --endpoints endpoints.yml \
     --debug
