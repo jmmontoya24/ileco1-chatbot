@@ -2,13 +2,18 @@ FROM rasa/rasa-sdk:3.6.0
 
 WORKDIR /app
 
+# Copy actions folder
 COPY actions /app/actions
 
+# Install database driver
 USER root
 RUN pip install psycopg2-binary
 
+# Switch back to non-root user
 USER 1001
 
+# Expose port
 EXPOSE 5055
 
-CMD ["start", "--actions", "actions"]
+# Use shell form to support PORT environment variable
+CMD rasa run actions --port ${PORT:-5055}
