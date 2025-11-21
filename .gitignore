@@ -1,4 +1,4 @@
- Python
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -10,27 +10,73 @@ build/
 venv/
 env/
 ENV/
+.Python
 
-# Rasa
-models/*.tar.gz
+# Rasa specific
 .rasa/
+results/
+*.tar.gz
+
+# IMPORTANT: Choose one option below:
+
+# Option 1: If you want to train model on Render (RECOMMENDED)
+# Uncomment this to exclude models from git:
+models/
+
+# Option 2: If you want to commit your trained model
+# Keep models/ tracked but ignore large files:
+# models/*.tar.gz
+# !models/current.tar.gz
 
 # Database
 *.db
 *.sqlite
+*.sqlite3
+
+# Logs
+*.log
+rasa.log
+rasa_sdk.log
 
 # IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
+*.sublime-project
+*.sublime-workspace
 
 # OS
 .DS_Store
 Thumbs.db
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 
-# Logs
-*.log
-
-# Environment variables (if you have a .env file)
+# Environment variables
 .env
+.env.local
+.env.*.local
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+*~
+
+# Node modules (if using any JS tools)
+node_modules/
+
+# Docker
+.dockerignore
+
+# Credentials (extra safety)
+credentials.yml.backup
+endpoints.yml.backup
