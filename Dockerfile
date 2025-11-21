@@ -14,11 +14,11 @@ USER root
 # Train the Rasa model at build time
 RUN rasa train --fixed-model-name current
 
-# Expose Rasa default port
+# Expose default Rasa port
 EXPOSE 5005
 
-# Set default port (Render injects $PORT automatically)
+# Let Rasa use Render's injected PORT environment variable
 ENV PORT=5005
 
-# Run Rasa server using exec form (avoids /bin/bash issue)
-CMD ["rasa", "run", "--enable-api", "--cors", "*", "--port", "5005", "--credentials", "credentials.yml", "--endpoints", "endpoints.yml", "--debug"]
+# Run Rasa server with dynamic port
+CMD ["sh", "-c", "rasa run --enable-api --cors '*' --port $PORT --credentials credentials.yml --endpoints endpoints.yml --debug"]
